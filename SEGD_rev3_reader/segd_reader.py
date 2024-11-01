@@ -35,6 +35,7 @@ import datetime
 import numpy as np
 from obspy import UTCDateTime, Trace, Stream
 from pathlib import Path
+import importlib.resources as pkg_resources
 
 
 ''' 1. Main SEG-D rev 3.0 reader class '''
@@ -49,7 +50,8 @@ class SEG_D_Reader:
     
     def __init__(self, filepath, segdreader_path = str(Path(__file__).parent), verbose=False):
         self.filepath = filepath
-        self.segdreader_path = segdreader_path
+        with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers") as segdreader_header_path:
+            self.segdreader_header_path = segdreader_header_path
         self.file = None
         self.verbose = verbose
     
@@ -454,7 +456,7 @@ class SEG_D_Reader:
         general_header = self.read_32byte_header(general_header_start)
 
         # Parse fields according to CSV specification
-        general_header_spec = self.read_header_spec_from_csv(self.segdreader_path + "/segd_csv_headers/generalHeader1.csv")
+        general_header_spec = self.read_header_spec_from_csv(self.segdreader_header_path + "/generalHeader1.csv")
         header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
 
         if self.verbose:
@@ -477,7 +479,7 @@ class SEG_D_Reader:
         general_header = self.read_32byte_header(general_header_start)
 
         # Parse fields according to CSV specification
-        general_header_spec = self.read_header_spec_from_csv(self.segdreader_path + "/segd_csv_headers/generalHeader2.csv")
+        general_header_spec = self.read_header_spec_from_csv(self.segdreader_header_path + "/generalHeader2.csv")
         header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
 
         if self.verbose:
@@ -500,7 +502,7 @@ class SEG_D_Reader:
         general_header = self.read_32byte_header(general_header_start)
 
         # Parse fields according to CSV specification
-        general_header_spec = self.read_header_spec_from_csv(self.segdreader_path + "/segd_csv_headers/generalHeader3.csv")
+        general_header_spec = self.read_header_spec_from_csv(self.segdreader_header_path + "/generalHeader3.csv")
         header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
 
         if self.verbose:
@@ -518,7 +520,7 @@ class SEG_D_Reader:
         scan_header = self.read_96byte_header(start_byte)
 
         # Parse fields according to CSV specification
-        scan_header_spec = self.read_header_spec_from_csv(self.segdreader_path + "/segd_csv_headers/scanTypeHeader.csv")
+        scan_header_spec = self.read_header_spec_from_csv(self.segdreader_header_path + "/scanTypeHeader.csv")
         header_fields = self.parse_header_fields_from_spec(scan_header, scan_header_spec)
 
         if self.verbose:
@@ -536,7 +538,7 @@ class SEG_D_Reader:
         demux_header = self.read_20byte_header(start_byte)
 
         # Parse fields according to CSV specification
-        demux_header_spec = self.read_header_spec_from_csv(self.segdreader_path + "/segd_csv_headers/demuxTraceHeader.csv")
+        demux_header_spec = self.read_header_spec_from_csv(self.segdreader_header_path + "/demuxTraceHeader.csv")
         header_fields = self.parse_header_fields_from_spec(demux_header, demux_header_spec)
 
         if self.verbose:
@@ -554,7 +556,7 @@ class SEG_D_Reader:
         trace_header = self.read_32byte_header(start_byte)
 
         # Parse fields according to CSV specification
-        trace_header_spec = self.read_header_spec_from_csv(self.segdreader_path + "/segd_csv_headers/traceHeaderExtension.csv")
+        trace_header_spec = self.read_header_spec_from_csv(self.segdreader_header_path + "/traceHeaderExtension.csv")
         header_fields = self.parse_header_fields_from_spec(trace_header, trace_header_spec)
 
         if self.verbose:
@@ -623,7 +625,7 @@ class SEG_D_Reader:
             return None
             
         # Parse fields according to CSV specification
-        trace_header_spec = self.read_header_spec_from_csv(self.segdreader_path + "/segd_csv_headers/" + trace_header_csv_file)
+        trace_header_spec = self.read_header_spec_from_csv(self.segdreader_header_path + "/" + trace_header_csv_file)
         header_fields = self.parse_header_fields_from_spec(trace_header, trace_header_spec)
 
         if self.verbose:
