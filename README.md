@@ -29,3 +29,16 @@ SEGD_rev3_reader/
 ├── setup.py                           # Packaging configuration
 ├── README.md                          # Project description
 └── LICENSE                            # License file
+
+## License
+
+This package is open-source and licensed under the MIT License.
+See the LICENSE file / file headers for more details.
+
+## Version history:
+
+### 0.1 (1st Nov 2024) - Current Version
+- Initial release of SEGD_rev3_reader
+- Only trialled on Sercel WiNG DFU node data
+- Limited functionality (reads header/trace data and returns as dictionary or obspy stream)
+- Includes additional utility function to rotate 3-component Galperin configuration data to ENZ
