@@ -25,7 +25,9 @@ SEGD_rev3_reader/
 │   └── segd_rev3_csv_headers/                  
 │       └── ...                        # CSV files containing header fields from SEG-D rev 3.0 documentation
 ├── examples/                     
-│   └── sercel_segd3_example.ipynb     # Example notebook for reading Sercel WiNG DFU node data (Costa Rica TAPIR deployment)
+│   ├── sercel_segd3_example.ipynb     # Example notebook for reading Sercel WiNG DFU node data (Costa Rica TAPIR deployment)
+│   └── data/                  
+│       └── 00102900.segd              # 120 secs Sercel WiNF DFU node data from Costa Rica TAPIR deployment
 ├── pyproject.toml                     # Build configuration file
 ├── setup.py                           # Packaging configuration
 ├── README.md                          # Project description
