@@ -1,0 +1,11 @@
+name,startByte,endByte,startNibble,endNibble,format,description
+rotationXAxis,1,4,1,8,ieee,Rotation angle around X axis in radians
+rotationYAxis,5,8,9,16,ieee,Rotation angle around Y axis in radians
+rotationZAxis,9,12,17,24,ieee,Rotation angle around Z axis in radians
+referenceOrientation,13,16,25,32,ieee,Rotation angle for the system relative to true north
+timeStamp,17,24,33,48,timestamp,Timestamp for which the rotation applies.
+orientationType,25,25,49,50,ubin,Rotation coordinate system. See header info in documentation.
+referenceOrientValid,26,26,51,52,ubin,Set to 1 if referenceOrientation valid otherwise set as 0.
+rotationApplied,27,27,53,54,ubin,Set to 1 if rotation around XYZ axes (first three fields) already applied otherwise set as 0.
+rotationNorthApplied,28,28,55,56,ubin,Set to 1 if values in traces already rotated to true north. Otherwise 0.
+headerBlockType,32,32,63,64,ubin,Must be 60 (hex) or 96 (decimal) for sensor info header.

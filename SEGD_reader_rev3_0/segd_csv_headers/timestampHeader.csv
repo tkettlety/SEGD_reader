@@ -1,0 +1,3 @@
+name,startByte,endByte,startNibble,endNibble,format,description
+timeZero,1,8,1,16,timestamp,Time Zero for this data block (SEG-D timestamp). Time of first sample in the data described by this header. Time Zero + Sample Skew + First Timing Word.
+headerBlockType,32,32,63,64,ubin,Must be set to 42 (hex) or 66 (decimal) for Timestamp Header.

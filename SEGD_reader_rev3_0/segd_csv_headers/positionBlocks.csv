@@ -1,0 +1,23 @@
+name,startByte,endByte,startNibble,endNibble,format,description
+timeOfPosition,1,8,1,16,timestamp,Time of position.
+timeOfMeasurement,9,16,17,32,timestamp,Time of measurement / calculation.
+verticalError,17,20,31,40,ieee,95 percent precision estimate in same units as vertical coordinate
+horizontalErrorSemiMajor,21,24,41,48,ieee,95 percent error ellipse semi-major axis in same units as horizontal coordinate
+horizontalErrorSemiMinor,25,28,49,56,ieee,95 percent error ellipse semi-minor axis in same units as horizontal coordinate
+horizontalError,29,30,57,60,ubin,Horizontal error quality estimate - bearing of error ellipse semi-major axis oriented to grid north in 1/100s of a degree
+positionType,31,31,61,62,ubin,Type of position - see documentation for code meanings.
+headerBlockType,32,32,63,64,ubin,Must be 50 (hex) or 80 (decimal) for Position Block 1.
+position1FirstCoordinate,33,40,65,80,double,First coordinate for coordinate tuple 1.
+position1SecondCoordinate,41,48,81,96,double,Second coordinate for coordinate tuple 1.
+position1ThirdCoordinate,49,56,97,112,double,Third coordinate for coordinate tuple 1.
+position1LocationDataStanza,57,58,113,116,ubin,Location Data Stanza ID of the CRS for coordinate tuple 1.
+position1ValidFlag,59,59,117,118,ubin,Position 1 valid flag - set to 1 if position coordinates are valid or 0 if not.
+position1Quality,60,60,119,120,ubin,Position 1 quality flag - see documentation for code meanings. 1 is good. 3 is bad.
+headerBlockType,64,64,127,128,ubin,Must be 51 (hex) or 81 (decimal) for Position Block 2.
+position2FirstCoordinate,65,72,129,144,double,First coordinate for coordinate tuple 2.
+position2SecondCoordinate,73,80,145,160,double,Second coordinate for coordinate tuple 2.
+position2ThirdCoordinate,81,88,161,176,double,Third coordinate for coordinate tuple 2.
+position2LocationDataStanza,89,90,177,180,ubin,Location Data Stanza ID of the CRS for coordinate tuple 2.
+position2ValidFlag,91,91,181,182,ubin,Position 2 valid flag - set to 1 if position coordinates are valid or 0 if not.
+position2Quality,92,92,183,184,ubin,Position 2 quality flag - see documentation for code meanings. 1 is good. 3 is bad.
+headerBlockType,96,96,191,192,ubin,Must be 52 (hex) or 82 (decimal) for Position Block 3.

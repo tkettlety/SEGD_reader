@@ -1,0 +1,6 @@
+name,startByte,endByte,startNibble,endNibble,format,description
+instrumentTestTime,1,8,1,16,timestamp,Time of last equipment test. Set to 0 if not recorded.
+sensorSensitivity,9,12,17,24,ieee,Sensor sensitivity. Divide by this number to achieve a physical unit (byte 31 of THEB1)
+instrumentTestResult,13,13,25,26,ubin,0 untested 1 passed 2 failed 3 uncertain
+serialNumber,14,31,27,62,serial,Serial number of sensor for this receiver. Left-justified, padded with space characters.
+headerBlockType,32,32,63,64,ubin,Must be 42 (hex) or 65 (decimal) for sensor info header.
