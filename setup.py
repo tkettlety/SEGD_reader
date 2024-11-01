@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="SEGD_rev3_reader",
     version="0.1",
-    description="Reader functions for SEG-D rev 3.0 seismic data",
+    description="A Python package to read seismic data from SEG-D rev 3.0 format",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/sachalapins/segd_rev3_reader",
