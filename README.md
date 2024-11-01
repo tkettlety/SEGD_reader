@@ -16,6 +16,7 @@ pip install SEGD_rev3_reader[jupyter]
 
 ## Package contents:
 
+```
 SEGD_rev3_reader/
 ├── SEGD_rev3_reader/
 │   ├── __init__.py                    # Initializes package for imports
@@ -29,6 +30,7 @@ SEGD_rev3_reader/
 ├── setup.py                           # Packaging configuration
 ├── README.md                          # Project description
 └── LICENSE                            # License file
+```
 
 ## License
 
