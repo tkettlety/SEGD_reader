@@ -41,7 +41,15 @@ See the LICENSE file / file headers for more details.
 
 ## Version history:
 
-### 0.1 (1st Nov 2024) - Current Version
+### 0.2 (4th Nov 2024) - Current Version
+- Updated reader code to read Stryde node data
+- Known issues:
+    - Need to identify where GPS location info is stored
+    - Does instrument serial number need to be identified
+    - Are timings okay? Example file is just over 1 hour.
+
+
+### 0.1 (1st Nov 2024)
 - Initial release of SEGD_rev3_reader
 - Only trialled on Sercel WiNG DFU node data
 - Limited functionality (reads header/trace data and returns as dictionary or obspy stream)
