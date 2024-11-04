@@ -44,7 +44,7 @@ See the LICENSE file / file headers for more details.
 
 ### 0.2 (4th Nov 2024) - Current Version
 - Updated reader code to read Stryde node data
-- Known issues:
+- Possible issues on Stryde data:
     - Need to identify where GPS location info is stored
     - Does instrument serial number need to be identified
     - Are timings okay? Example file is just over 1 hour.
