@@ -627,6 +627,9 @@ class SEG_D_Reader:
             if self.verbose:
                 print("Header type unrecognised, skipping. Header block type: " + hex(byte32)[2:])
             return None
+
+        if self.verbose:
+            print("Header type: " + trace_header_csv_file)
             
         # Parse fields according to CSV specification
         with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers/" + trace_header_csv_file) as csv_header_path:
@@ -643,10 +646,9 @@ class SEG_D_Reader:
 
     def read_32bit_IEEE_trace_data(self, start_byte, num_samples):
         """
-        Read trace data from a SEG-D file.
+        Read trace data from a SEG-D file (format code = 8058).
         
         Parameters:
-        - data: Binary data containing the trace samples.
         - start_byte: The starting byte of the trace data (1-based index).
         - num_samples: Number of samples in the trace.
         
@@ -666,6 +668,44 @@ class SEG_D_Reader:
         trace_samples = struct.unpack(fmt, relevant_bytes)
         
         return trace_samples
+        
+
+    def read_24bit_trace_data(self, start_byte, num_samples):
+        """
+        Read 24-bit 2's complement trace data from a SEG-D file (format code = 8036).
+        
+        Parameters:
+        - start_byte: The starting byte of the trace data (1-based index).
+        - num_samples: Number of samples in the trace.
+        
+        Returns:
+        - A list of decoded trace samples as 24-bit signed integers.
+        """        
+    
+        if not self.file:
+            return None
+    
+        self.file.seek(start_byte)  # Move to the start of trace data
+        total_trace_bytes = num_samples * 3  # Total size of trace data in bytes (24 bits per sample)
+        relevant_bytes = self.file.read(total_trace_bytes)  # Read the required number of bytes for trace
+        
+        # Convert each 3-byte sequence to a signed 24-bit integer
+        trace_samples = []
+        for i in range(num_samples):
+            # Read 3 bytes for each sample
+            sample_bytes = relevant_bytes[i*3:(i+1)*3]
+            
+            # Convert 3 bytes to an integer (big-endian)
+            int_value = int.from_bytes(sample_bytes, byteorder='big', signed=False)
+            
+            # Convert to 2's complement signed integer if the value is negative
+            if int_value >= 0x800000:  # 0x800000 is the threshold for 24-bit negative numbers
+                int_value -= 0x1000000  # Adjust for 24-bit 2's complement
+            
+            trace_samples.append(int_value)
+    
+        return trace_samples
+        
 
     def get_data_plus_key_headers(self):
         """
@@ -709,6 +749,7 @@ class SEG_D_Reader:
         out_dict['file_header']['duration_microsec'] = duration
         out_dict['file_header']['dominant_sampling_interval_microsec'] = samplingInterval
         out_dict['file_header']['record_timezero_utc'] = self.segd_timestamp_to_UCTDateTime(gen_head3['timeZero'])
+        out_dict['file_header']['trace_format_code'] = gen_head1['formatCode']
 
         headerSize = gen_head3['headerSize']
         out_dict['file_header']['headerSize_bytes'] = headerSize
@@ -720,10 +761,11 @@ class SEG_D_Reader:
             tmp = self.read_other_header(i) # Returns None if unrecognised header, otherwise dict
             if type(tmp) is dict:
                 if tmp['headerBlockType'] == 48:
-                    out_dict['channelSet_' + str(num_channel_sets + 1)] = {}
-                    out_dict['channelSet_' + str(num_channel_sets + 1)]['description'] = tmp
-                    out_dict['channelSet_' + str(num_channel_sets + 1)]['traceData'] = {}
-                    num_channel_sets += 1
+                    if (tmp['headerBlockType2'] == 49) and (tmp['headerBlockType3'] == 50):
+                        out_dict['channelSet_' + str(num_channel_sets + 1)] = {}
+                        out_dict['channelSet_' + str(num_channel_sets + 1)]['description'] = tmp
+                        out_dict['channelSet_' + str(num_channel_sets + 1)]['traceData'] = {}
+                        num_channel_sets += 1
             i += 32
 
         # Then loop through channel sets (trace data)
@@ -731,6 +773,12 @@ class SEG_D_Reader:
             print("*** Reading trace headers and data ***")
         start_byte = headerSize # start place in file
         for channel_set in range(num_channel_sets):
+            
+            #### NEED TO FIGURE OUT WHAT TO DO WHEN 'Number of scan type headers' is a weird value
+            # Looks like seismic data always has '1' of these headers though so can just output data at this point
+            if int(out_dict['channelSet_' + str(channel_set + 1)]['description']['scanTypeNumber']) > 1:
+                return out_dict
+                
             num_trace_headers = out_dict['channelSet_' + str(channel_set + 1)]['description']['numberTraceHeaderExtensions']
             num_traces = out_dict['channelSet_' + str(channel_set + 1)]['description']['numberOfChannelsThisSet']
             num_samples_per_trace = out_dict['channelSet_' + str(channel_set + 1)]['description']['samplesPerChannel']
@@ -770,19 +818,35 @@ class SEG_D_Reader:
                             elif tmp['headerBlockType'] == 65:
                                 out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['sensorSensitivity'] = tmp['sensorSensitivity']
                                 out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['serialNumber'] = tmp['serialNumber']
+                            elif tmp['headerBlockType'] == 64:
+                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['timeDriftBlock'] = tmp
                             elif tmp['headerBlockType'] == 214:
                                 out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['latitude'] = tmp['latitude']
                                 out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['longitude'] = tmp['longitude']
                                 out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['elevation'] = tmp['elevation']
                     start_byte += 32
                 # Get trace data:
-                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_data'] = self.read_32bit_IEEE_trace_data(start_byte, out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
-                start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 4
+            
+                if out_dict['file_header']['trace_format_code'] == '8058':
+                    trace_data = self.read_32bit_IEEE_trace_data(start_byte, out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
+                    start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 4
+                elif out_dict['file_header']['trace_format_code'] == '8036':
+                    trace_data = self.read_24bit_trace_data(start_byte, out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
+                    start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 3
+                else:
+                    print('Format code for trace data (' + out_dict['file_header']['trace_format_code'] + ') not yet supported. Exiting.')
+                    return None
+
+                # If seismic data, keep, else skip.
+                if out_dict['channelSet_' + str(channel_set + 1)]['description']['channelType'][2:] == '10':
+                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_data'] = trace_data
+                else:
+                    continue
                 
         return out_dict
 
 
-def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False):
+def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, reader_verbose = False):
     '''
     Reads a Sercel SEG-D revision 3.0 file and returns an obspy stream
     '''
@@ -795,7 +859,7 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
 
     for filepath in filelist:
         # Initiate SEG_D_Reader:
-        reader = SEG_D_Reader(filepath)
+        reader = SEG_D_Reader(filepath, verbose=reader_verbose)
     
         # Open file:
         reader.open_file()
@@ -808,20 +872,28 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
         line_nums = [list(data[chan_set]['traceData'].keys()) for chan_set in channel_sets]
     
         for chan_set, line_num_list in zip(channel_sets, line_nums):
+            if len(line_num_list) < 1:
+                continue
             for line_num in line_num_list:
                 for trace_num in list(data[chan_set]['traceData'][line_num].keys()):
+                    if 'trace_data' not in data[chan_set]['traceData'][line_num][trace_num]:
+                        continue
                     trace_h, trace_d = data[chan_set]['traceData'][line_num][trace_num]['trace_header'], np.array(data[chan_set]['traceData'][line_num][trace_num]['trace_data'], dtype=np.float32)
 
                     if remove_gaps:
                         if trace_h['timeZero_utc'] == UTCDateTime("1980-01-06T00:00:00.000000Z"):
                             continue
-                
+
+                    if 'serialNumber' not in trace_h:
+                        trace_h['serialNumber'] = line_num + '_' + trace_num
+                    
                     # check if all traces can be converted to int
                     convert_to_int = convert_to_int and np.all(np.mod(trace_d, 1) == 0)
     
                     tr = Trace(trace_d)
                     if convert_to_int:
                         tr.data = tr.data.astype(np.int32)
+
                     if serial_to_station_name_dict is not None:
                         if 'network' in serial_to_station_name_dict[trace_h['serialNumber']]:
                             tr.stats.network = serial_to_station_name_dict[trace_h['serialNumber']]['network_code']
@@ -868,11 +940,15 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                     tr.stats.segd['filterPhase'] = FILTER_PHASE_CODE[data[chan_set]['description']['filterPhase']]
                     tr.stats.segd['filterDelaySecs'] = data[chan_set]['description']['filterDelay'] / 1e6
                     tr.stats.segd['DSM'] = data[chan_set]['description']['descaleMultiplier']
-                    tr.stats.segd['sensitivity'] = trace_h['sensorSensitivity']
+                    if 'sensorSensitivity' in trace_h:
+                        tr.stats.segd['sensitivity'] = trace_h['sensorSensitivity']
                     tr.stats.segd['physicalUnit'] = PHYSICAL_UNIT_CODE[trace_h['physicalUnit_code']]
-                    tr.stats.segd['latitude'] = trace_h['latitude']
-                    tr.stats.segd['longitude'] = trace_h['longitude']
-                    tr.stats.segd['elevation'] = trace_h['elevation']
+                    if 'latitude' in trace_h:
+                        tr.stats.segd['latitude'] = trace_h['latitude']
+                    if 'longitude' in trace_h:
+                        tr.stats.segd['longitude'] = trace_h['longitude']
+                    if 'elevation' in trace_h:
+                        tr.stats.segd['elevation'] = trace_h['elevation']
                     st.append(tr)
                     
         reader.close_file()
