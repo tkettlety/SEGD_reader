@@ -1,7 +1,17 @@
 '''
-`segd_reader.py`: Main SEG-D rev 3.0 reader sript.
+`segd_reader.py`: Main SEG-D reader sript.
+
+Currently supports the following SEG-D versions:
+- rev 3.0
+- rev 2.1
+
+Tested on data from the following manufactures:
+- Sercel: rev 3.0
+- Stryde: rev 3.0
+- SmartSolo: rev 2.1
+
 Includes
-- Class + functions to read and parse header/trace data from SEG-D rev 3.0 files.
+- Class + functions to read and parse header/trace data from SEG-D files.
 - Function to return data as obspy stream.
 
 
@@ -38,19 +48,21 @@ from pathlib import Path
 import importlib.resources as pkg_resources
 
 
-''' 1. Main SEG-D rev 3.0 reader class '''
+''' 1. Main SEG-D reader class '''
 
 class SEG_D_Reader:
     ''' 
     Reads and parses various header/trace data and outputs as Python dictionary.
 
     Parameters:
-    filepath: str, path to SEG-D rev 3.0 file to be read
+    filepath: str, path to SEG-D file to be read
     '''
     
     def __init__(self, filepath, verbose=False):
         self.filepath = filepath
         self.file = None
+        self.major_version = None
+        self.minor_version = None
         self.verbose = verbose
     
     def open_file(self):
@@ -275,6 +287,7 @@ class SEG_D_Reader:
         Returns:
         - The SEG-D timestamp in microseconds as a signed integer.
         """
+        
         # Extract relevant bytes from the data (adjusting for 1-based indexing)
         relevant_bytes = data[(start_byte-1):end_byte]
         
@@ -446,6 +459,9 @@ class SEG_D_Reader:
         if not self.file:
             return None
 
+        if not self.major_version:
+            self.get_segd_version()
+
         # Read General Header #1
         if after_storage_unit_label:
             general_header_start = 128  # Start after the 128-byte storage unit label
@@ -454,7 +470,7 @@ class SEG_D_Reader:
         general_header = self.read_32byte_header(general_header_start)
 
         # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers/generalHeader1.csv") as csv_header_path:
+        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/generalHeader1.csv") as csv_header_path:
             general_header_spec = self.read_header_spec_from_csv(csv_header_path)
         header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
 
@@ -470,6 +486,9 @@ class SEG_D_Reader:
         if not self.file:
             return None
 
+        if not self.major_version:
+            self.get_segd_version()
+
         # Read General Header #2
         if include_storage_unit_label:
             general_header_start = 128 + 32  # Start after the 128-byte storage unit label
@@ -478,7 +497,7 @@ class SEG_D_Reader:
         general_header = self.read_32byte_header(general_header_start)
 
         # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers/generalHeader2.csv") as csv_header_path:
+        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/generalHeader2.csv") as csv_header_path:
             general_header_spec = self.read_header_spec_from_csv(csv_header_path)
         header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
 
@@ -494,6 +513,20 @@ class SEG_D_Reader:
         if not self.file:
             return None
 
+        if not self.major_version:
+            self.get_segd_version()
+
+        # General header #3 only applies to SEG-D version 3.0+, 
+        # If version 2.1, read General Header N instead (if exists)
+        if int(self.major_version) < 3:
+            gen_head1 = self.read_general_header1() # Check how many general headers in file from general header #1
+            # If less than 2 additional general headers then return None, otherwise proceeed with general header N
+            if int(gen_head1['generalHeaderBlocks']) < 2:
+                return None
+            csv_file = "generalHeaderN.csv"
+        else:
+            csv_file = "generalHeader3.csv"
+
         # Read General Header #3
         if include_storage_unit_label:
             general_header_start = 128 + 64  # Start after the 128-byte storage unit label
@@ -502,7 +535,35 @@ class SEG_D_Reader:
         general_header = self.read_32byte_header(general_header_start)
 
         # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers/generalHeader3.csv") as csv_header_path:
+        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/" + csv_file) as csv_header_path:
+            general_header_spec = self.read_header_spec_from_csv(csv_header_path)
+        header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
+
+        if self.verbose:
+            # Print parsed fields for verification
+            for field, value in header_fields.items():
+                print(f"{field}: {value}")
+        
+        return header_fields
+
+    def read_general_headerN(self, start_byte):
+        """ Reads General Header N """
+        if not self.file:
+            return None
+
+        if not self.major_version:
+            self.get_segd_version()
+
+        # Only applies to SEG-D version 2.1 (check for earlier versions but deprecated by version 3.0)
+        # if (int(self.major_version) != 2) or (int(self.minor_version) != 1):
+        if int(self.major_version) > 2:
+            return None
+
+        # Read General Header #N
+        general_header = self.read_32byte_header(start_byte)
+
+        # Parse fields according to CSV specification
+        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/generalHeaderN.csv") as csv_header_path:
             general_header_spec = self.read_header_spec_from_csv(csv_header_path)
         header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
 
@@ -521,7 +582,7 @@ class SEG_D_Reader:
         scan_header = self.read_96byte_header(start_byte)
 
         # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers/scanTypeHeader.csv") as csv_header_path:
+        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/scanTypeHeader.csv") as csv_header_path:
             scan_header_spec = self.read_header_spec_from_csv(csv_header_path)
         header_fields = self.parse_header_fields_from_spec(scan_header, scan_header_spec)
 
@@ -540,7 +601,7 @@ class SEG_D_Reader:
         demux_header = self.read_20byte_header(start_byte)
 
         # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers/demuxTraceHeader.csv") as csv_header_path:
+        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/demuxTraceHeader.csv") as csv_header_path:
             demux_header_spec = self.read_header_spec_from_csv(csv_header_path)
         header_fields = self.parse_header_fields_from_spec(demux_header, demux_header_spec)
 
@@ -551,15 +612,15 @@ class SEG_D_Reader:
         
         return header_fields
 
-    def read_trace_header_extension1(self, start_byte):
-        """ Reads Trace Header Extension #1 """
+    def read_trace_header_extension(self, start_byte):
+        """ Reads Trace Header Extension """
         if not self.file:
             return None
 
         trace_header = self.read_32byte_header(start_byte)
 
         # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers/traceHeaderExtension.csv") as csv_header_path:
+        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/traceHeaderExtension.csv") as csv_header_path:
             trace_header_spec = self.read_header_spec_from_csv(csv_header_path)
         header_fields = self.parse_header_fields_from_spec(trace_header, trace_header_spec)
 
@@ -571,8 +632,15 @@ class SEG_D_Reader:
         return header_fields
 
     def read_other_header(self, start_byte):
-        """ Reads other / optional header extensions given in SEG-D rev 3.0 documentation """
+        """ Reads other / optional header extensions given in SEG-D 3.0 documentation """
         if not self.file:
+            return None
+
+        if not self.major_version:
+            self.get_segd_version()
+
+        # Only applies to SEG-D version 3.0+
+        if int(self.major_version) < 3:
             return None
 
         trace_header = self.read_32byte_header(start_byte)
@@ -632,7 +700,7 @@ class SEG_D_Reader:
             print("Header type: " + trace_header_csv_file)
             
         # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_rev3_reader").joinpath("segd_rev3_csv_headers/" + trace_header_csv_file) as csv_header_path:
+        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/" + trace_header_csv_file) as csv_header_path:
             trace_header_spec = self.read_header_spec_from_csv(csv_header_path)
         header_fields = self.parse_header_fields_from_spec(trace_header, trace_header_spec)
 
@@ -705,17 +773,117 @@ class SEG_D_Reader:
             trace_samples.append(int_value)
     
         return trace_samples
-        
 
-    def get_data_plus_key_headers(self):
+
+    def get_segd_version(self):
         """
-        Stores key header from array in dictionary
+        Identifies file SEG-D file version
         """
         if not self.file:
             try:
                 self.open_file()
             except:
                 print("Can't open file.")
+
+        # Get version info from bytes 11 and 12 of general header 2:
+        gen_head2 = self.read_32byte_header(32)
+        self.major_version = self.read_unsigned_binary(gen_head2, 11, 11)
+        self.minor_version = self.read_unsigned_binary(gen_head2, 12, 12)
+
+        if self.verbose:
+            print("SEG-D version number: " + str(self.major_version) + "." + str(self.minor_version))
+
+        return "SEG-D version number: " + str(self.major_version) + "." + str(self.minor_version)
+
+
+    def clear_segd_version(self):
+        self.major_version = None
+        self.minor_version = None
+    
+
+    def get_general_headers_only(self, force_version=None):
+        
+        if not self.file:
+            try:
+                self.open_file()
+            except:
+                print("Can't open file.")
+
+        self.clear_segd_version()
+
+        if force_version:
+            try:
+                self.major_version, self.minor_version = [int(ver_num) for ver_num in str(force_version).split('.')]
+            except:
+                print(f"Forced version '{force_version}' not recognised. Reading version from SEG-D file instead.")
+        
+        if not self.major_version:
+            self.get_segd_version()
+        
+        # Check if the directory exists within 'segd_csv_headers'
+        try:
+            with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version)) as path:
+                if not path.is_dir():
+                    print(f"Version {self.major_version}.{self.minor_version} not yet supported. May get weird values.")
+                    if self.major_version < 3:
+                        # Use rev 2.1 header structure if older version
+                        self.major_version = 2
+                        self.minor_version = 1
+                    else:
+                        # Use rev 3.0 header structure if newer version
+                        self.major_version = 3
+                        self.minor_version = 0
+        except FileNotFoundError:
+            print(f"Version {self.major_version}.{self.minor_version} not yet supported. May get weird values.")
+            if self.major_version < 3:
+                # Use rev 2.1 header structure if older version
+                self.major_version = 2
+                self.minor_version = 1
+            else:
+                # Use rev 3.0 header structure if newer version
+                self.major_version = 3
+                self.minor_version = 0
+
+        out_dict = {}
+
+        if self.verbose:
+            print("*** Reading file headers ***")
+        # Read first three general headers and extract key info
+        out_dict['general_header1'] = self.read_general_header1()
+        out_dict['general_header2'] = self.read_general_header2()
+        out_dict['general_header3'] = self.read_general_header3() # Doesn't read anything for versions < 3.0
+        
+        return out_dict
+    
+    
+    def get_data_plus_key_headers(self, force_version=None):
+        """
+        Stores key headers and trace data in dictionary, that can be used to create obspy stream etc.
+        """
+        if not self.file:
+            try:
+                self.open_file()
+            except:
+                print("Can't open file.")
+
+        if force_version:
+            try:
+                self.major_version, self.minor_version = [int(ver_num) for ver_num in str(force_version).split('.')]
+            except:
+                print(f"Forced version '{force_version}' not recognised. Reading version from SEG-D file instead.")
+        
+        if not self.major_version:
+            self.get_segd_version()
+        
+        # Check if the directory exists within 'segd_csv_headers'
+        try:
+            with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version)) as path:
+                if not path.is_dir():
+                    print(f"Version {self.major_version}.{self.minor_version} not yet supported. Doing nothing.")
+                    return None
+        except FileNotFoundError:
+            print(f"Version {self.major_version}.{self.minor_version} not yet supported. Doing nothing.")
+            return None
 
         out_dict = {}
         out_dict['file_header'] = {}
@@ -725,7 +893,9 @@ class SEG_D_Reader:
         # Read first three general headers and extract key info
         gen_head1 = self.read_general_header1()
         gen_head2 = self.read_general_header2()
-        gen_head3 = self.read_general_header3()
+        gen_head3 = self.read_general_header3() # Doesn't read anything for versions < 3.0
+
+        # Read additional general headers
 
         fileNumber = gen_head1['fileNumber']
         if fileNumber == "ffff":
@@ -734,10 +904,15 @@ class SEG_D_Reader:
         duration = gen_head1['recordLength']
         if 'f' in duration:
             duration = gen_head2['extendedRecordLength']
+        if int(self.major_version) < 3:
+            duration *= 1e3 # Duration given in milliseconds in earlier SEG-D versions
         
         samplingInterval = gen_head1['baseScanInterval']
-        if samplingInterval == 255/16:
-            samplingInterval = gen_head2['dominantSamplingInterval']
+        if int(self.major_version) < 3:
+            samplingInterval *= 1e3 # Given in milliseconds in earlier SEG-D versions
+        else:
+            if samplingInterval == 255/16:
+                samplingInterval = gen_head2['dominantSamplingInterval']
         
         out_dict['file_header']['fileNumber'] = fileNumber
         out_dict['file_header']['SEGDVersion'] = str(gen_head2['majorSEGDrevisionNumber']) + "." + str(gen_head2['minorSEGDrevisionNumber'])
@@ -748,107 +923,226 @@ class SEG_D_Reader:
         out_dict['file_header']['second'] = gen_head1['second']
         out_dict['file_header']['duration_microsec'] = duration
         out_dict['file_header']['dominant_sampling_interval_microsec'] = samplingInterval
-        out_dict['file_header']['record_timezero_utc'] = self.segd_timestamp_to_UCTDateTime(gen_head3['timeZero'])
+        
+        if int(self.major_version) >= 3:
+            timezero = self.segd_timestamp_to_UCTDateTime(gen_head3['timeZero'])
+        else:
+            timezero = UTCDateTime("20" + gen_head1['year'].zfill(2) + gen_head1['day'].zfill(3) + "T" + gen_head1['hour'].zfill(2) + gen_head1['minute'].zfill(2) + gen_head1['second'].zfill(2))
+        
+        out_dict['file_header']['record_timezero_utc'] = timezero
         out_dict['file_header']['trace_format_code'] = gen_head1['formatCode']
 
-        headerSize = gen_head3['headerSize']
-        out_dict['file_header']['headerSize_bytes'] = headerSize
+        # From SEG-D version 3.0
+        if int(self.major_version) >= 3:        
+            headerSize = gen_head3['headerSize']
+            out_dict['file_header']['headerSize_bytes'] = headerSize
 
-        # Loop through remaining general header blocks while i < headerSize
-        i = 3*32 # Start after first three general headers:
-        num_channel_sets = 0
-        while i < headerSize:
-            tmp = self.read_other_header(i) # Returns None if unrecognised header, otherwise dict
-            if type(tmp) is dict:
-                if tmp['headerBlockType'] == 48:
-                    if (tmp['headerBlockType2'] == 49) and (tmp['headerBlockType3'] == 50):
-                        out_dict['channelSet_' + str(num_channel_sets + 1)] = {}
-                        out_dict['channelSet_' + str(num_channel_sets + 1)]['description'] = tmp
-                        out_dict['channelSet_' + str(num_channel_sets + 1)]['traceData'] = {}
-                        num_channel_sets += 1
-            i += 32
+            # Loop through remaining general header blocks while i < headerSize
+            i = 3*32 # Start after first three general headers:
+            num_channel_sets = 0
+            while i < headerSize:
+                tmp = self.read_other_header(i) # Returns None if unrecognised header, otherwise dict
+                if type(tmp) is dict:
+                    if tmp['headerBlockType'] == 48:
+                        if (tmp['headerBlockType2'] == 49) and (tmp['headerBlockType3'] == 50):
+                            out_dict['channelSet_' + str(num_channel_sets + 1)] = {}
+                            out_dict['channelSet_' + str(num_channel_sets + 1)]['description'] = tmp
+                            out_dict['channelSet_' + str(num_channel_sets + 1)]['traceData'] = {}
+                            num_channel_sets += 1
+                i += 32
 
-        # Then loop through channel sets (trace data)
-        if self.verbose:
-            print("*** Reading trace headers and data ***")
-        start_byte = headerSize # start place in file
-        for channel_set in range(num_channel_sets):
-            
-            #### NEED TO FIGURE OUT WHAT TO DO WHEN 'Number of scan type headers' is a weird value
-            # Looks like seismic data always has '1' of these headers though so can just output data at this point
-            if int(out_dict['channelSet_' + str(channel_set + 1)]['description']['scanTypeNumber']) > 1:
-                return out_dict
+            # Then loop through channel sets (trace data)
+            if self.verbose:
+                print("*** Reading trace headers and data ***")
+            start_byte = headerSize # start place in file
+            for channel_set in range(num_channel_sets):
                 
-            num_trace_headers = out_dict['channelSet_' + str(channel_set + 1)]['description']['numberTraceHeaderExtensions']
-            num_traces = out_dict['channelSet_' + str(channel_set + 1)]['description']['numberOfChannelsThisSet']
-            num_samples_per_trace = out_dict['channelSet_' + str(channel_set + 1)]['description']['samplesPerChannel']
-            # Loop through traces
-            for trace in range(num_traces):
-                if self.verbose:
-                    print("*** Reading trace number " + str(trace + 1) + " of " + str(num_traces) + " (channel set #" + str(channel_set + 1) + " of " + str(num_channel_sets) + ") ***")
-                tmp = self.read_demux_trace_header(start_byte)
-                start_byte += 20
-                # Loop through trace headers:
-                for trace_header in range(num_trace_headers):
+                #### NEED TO FIGURE OUT WHAT TO DO WHEN 'Number of scan type headers' is a weird value
+                # Looks like seismic data always has '1' of these headers though so can just output data at this point
+                if int(out_dict['channelSet_' + str(channel_set + 1)]['description']['scanTypeNumber']) > 1:
+                    return out_dict
+                    
+                num_trace_headers = out_dict['channelSet_' + str(channel_set + 1)]['description']['numberTraceHeaderExtensions']
+                num_traces = out_dict['channelSet_' + str(channel_set + 1)]['description']['numberOfChannelsThisSet']
+                num_samples_per_trace = out_dict['channelSet_' + str(channel_set + 1)]['description']['samplesPerChannel']
+                # Loop through traces
+                for trace in range(num_traces):
                     if self.verbose:
-                        print("*** Reading trace header " + str(trace_header + 1) + " of " + str(num_trace_headers) + " ***")
-                    if trace_header == 0:
-                        tmp = self.read_trace_header_extension1(start_byte)
-                        line_num = tmp['receiverLineNumber']
-                        if line_num < 0:
-                            line_num = tmp['extendedReceiverLineNumberInteger']
-                        line_num = 'line_' + str(line_num)
-                        point_num = tmp['receiverPointNumber']
-                        if point_num < 0:
-                            point_num = tmp['extendedReceiverPointNumberInteger']
-                        point_num = 'point_' + str(point_num)
-                        if line_num not in out_dict['channelSet_' + str(channel_set + 1)]['traceData']:
-                            out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num] = {}
-                        if point_num not in out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num]:
-                            out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num] = {}
-                        out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header'] = {}
-                        out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['sensorType_code'] = tmp['sensorType']
-                        out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['physicalUnit_code'] = tmp['physicalUnit']
-                        out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] = tmp['numSamplesPerTrace']
+                        print("*** Reading trace number " + str(trace + 1) + " of " + str(num_traces) + " (channel set #" + str(channel_set + 1) + " of " + str(num_channel_sets) + ") ***")
+                    tmp = self.read_demux_trace_header(start_byte)
+                    start_byte += 20
+                    # Loop through trace headers:
+                    for trace_header in range(num_trace_headers):
+                        if self.verbose:
+                            print("*** Reading trace header " + str(trace_header + 1) + " of " + str(num_trace_headers) + " ***")
+                        if trace_header == 0:
+                            tmp = self.read_trace_header_extension(start_byte)
+                            line_num = tmp['receiverLineNumber']
+                            if line_num < 0:
+                                line_num = tmp['extendedReceiverLineNumberInteger']
+                            line_num = 'line_' + str(line_num)
+                            point_num = tmp['receiverPointNumber']
+                            if point_num < 0:
+                                point_num = tmp['extendedReceiverPointNumberInteger']
+                            point_num = 'point_' + str(point_num)
+                            if line_num not in out_dict['channelSet_' + str(channel_set + 1)]['traceData']:
+                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num] = {}
+                            if point_num not in out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num]:
+                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num] = {}
+                            out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header'] = {}
+                            out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['sensorType_code'] = tmp['sensorType']
+                            out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['physicalUnit_code'] = tmp['physicalUnit']
+                            out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] = tmp['numSamplesPerTrace']
+                        else:
+                            tmp = self.read_other_header(start_byte)
+                            if type(tmp) is dict:
+                                if tmp['headerBlockType'] == 66:
+                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['timeZero_utc'] = self.segd_timestamp_to_UCTDateTime(tmp['timeZero'])
+                                elif tmp['headerBlockType'] == 65:
+                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['sensorSensitivity'] = tmp['sensorSensitivity']
+                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['serialNumber'] = tmp['serialNumber']
+                                elif tmp['headerBlockType'] == 64:
+                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['timeDriftBlock'] = tmp
+                                elif tmp['headerBlockType'] == 214:
+                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['latitude'] = tmp['latitude']
+                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['longitude'] = tmp['longitude']
+                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['elevation'] = tmp['elevation']
+                        start_byte += 32
+                    # Get trace data:
+                
+                    if out_dict['file_header']['trace_format_code'] == '8058':
+                        trace_data = self.read_32bit_IEEE_trace_data(start_byte, out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
+                        start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 4
+                    elif out_dict['file_header']['trace_format_code'] == '8036':
+                        trace_data = self.read_24bit_trace_data(start_byte, out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
+                        start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 3
                     else:
-                        tmp = self.read_other_header(start_byte)
-                        if type(tmp) is dict:
-                            if tmp['headerBlockType'] == 66:
-                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['timeZero_utc'] = self.segd_timestamp_to_UCTDateTime(tmp['timeZero'])
-                            elif tmp['headerBlockType'] == 65:
-                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['sensorSensitivity'] = tmp['sensorSensitivity']
-                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['serialNumber'] = tmp['serialNumber']
-                            elif tmp['headerBlockType'] == 64:
-                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['timeDriftBlock'] = tmp
-                            elif tmp['headerBlockType'] == 214:
-                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['latitude'] = tmp['latitude']
-                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['longitude'] = tmp['longitude']
-                                out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['elevation'] = tmp['elevation']
-                    start_byte += 32
-                # Get trace data:
-            
-                if out_dict['file_header']['trace_format_code'] == '8058':
-                    trace_data = self.read_32bit_IEEE_trace_data(start_byte, out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
-                    start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 4
-                elif out_dict['file_header']['trace_format_code'] == '8036':
-                    trace_data = self.read_24bit_trace_data(start_byte, out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
-                    start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 3
-                else:
-                    print('Format code for trace data (' + out_dict['file_header']['trace_format_code'] + ') not yet supported. Exiting.')
-                    return None
+                        print('Format code for trace data (' + out_dict['file_header']['trace_format_code'] + ') not yet supported. Exiting.')
+                        return None
+    
+                    # If seismic data, keep, else skip.
+                    if out_dict['channelSet_' + str(channel_set + 1)]['description']['channelType'][2:] == '10':
+                        out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_data'] = trace_data
+                    else:
+                        continue
 
-                # If seismic data, keep, else skip.
-                if out_dict['channelSet_' + str(channel_set + 1)]['description']['channelType'][2:] == '10':
-                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_data'] = trace_data
-                else:
+        else:
+            # For SEG-D version 2.1
+            additional_gen_head_blocks = int(gen_head1['generalHeaderBlocks'])       # Number of additional general header blocks, including general header 2
+            scan_types_per_record = int(gen_head1['scanTypesPerRecord'])             # Number of scan types per record (loop through these?)
+            channel_sets_per_scan_type = int(gen_head1['channelSetsPerScanType'])              # Number of channel sets per scan type (nested loop?)
+            num_additional_headers_per_scan_type = int(gen_head1['skewBlocks'])      # Number of 32 byte headers following each scan type header
+            extended_headers = gen_head1['extendedHeaderBlocks']                     # Number of 32 byte extended headers (additional equipment info)
+            if 'f' in extended_headers:
+                extended_headers = int(gen_head2['extendedHeaderBlocks'])
+            else:
+                extended_headers = int(extended_headers)
+            external_headers = gen_head1['externalHeaderBlocks']                     # Number of 32 byte external headers (additional user supplied info)
+            if 'f' in external_headers:
+                external_headers = int(gen_head2['externalHeaderBlocks'])
+            else:
+                external_headers = int(external_headers)
+
+            # Skip additional general header blocks and loop through scan type headers:
+            start_byte = (1 + additional_gen_head_blocks) * 32
+            for _ in range(scan_types_per_record):
+                for _ in range(channel_sets_per_scan_type):
+                    channel_set_header = self.read_scan_type_header(start_byte)
+                    
+                    if (int(channel_set_header['scanTypeNumber']) > 0) and (int(channel_set_header['channelSetNumber']) > 0):
+                        scan_type_number = channel_set_header['scanTypeNumber']
+                        if scan_type_number not in out_dict:
+                            out_dict[scan_type_number] = {}
+                        channel_set_number = channel_set_header['channelSetNumber']
+                        if channel_set_number not in out_dict[scan_type_number]:
+                            out_dict[scan_type_number][channel_set_number] = {}
+                            out_dict[scan_type_number][channel_set_number]['description'] = channel_set_header
+                            out_dict[scan_type_number][channel_set_number]['traceData'] = {}
+                            
+                    start_byte += 32
+            
+                # Not sure what to do with skew blocks yet (the number of these is zero in SmartSolo example file)
+                if int(gen_head1['skewBlocks']) > 0:
+                    for skew_block in range(int(gen_head1['skewBlocks'])):
+                        skew_block_header = self.read_scan_type_header(start_byte) 
+                        start_byte += 32
+
+            # Skip past extended and external headers for now as not sure what info is in them (user defined):
+            start_byte += (extended_headers + external_headers) * 32
+
+            for dict_key in list(out_dict.keys()):
+                if dict_key == 'file_header':
                     continue
+                else:
+                    for channel_set in list(out_dict[dict_key].keys()):
+                        tmp = self.read_demux_trace_header(start_byte)
+                        start_byte += 20
+                        num_trace_extension_headers = tmp['traceHeaderExtension']
+                        for _ in range(int(num_trace_extension_headers)):
+                            trace_header = self.read_trace_header_extension(start_byte)
+                            start_byte += 32
+
+                            # If sensor type defined (> 0 and < 10), get line and point number for data
+                            sensor_type = trace_header['sensorType']
+                            if (sensor_type > 0) and (sensor_type < 10):
+                                line_num = trace_header['receiverLineNumber']
+                                if line_num < 0:
+                                    line_num = trace_header['extendedReceiverLineNumberInteger']
+                                    line_num = 'line_' + str(line_num)
+                                point_num = trace_header['receiverPointNumber']
+                                if point_num < 0:
+                                    point_num = trace_header['extendedReceiverPointNumberInteger']
+                                    point_num = 'point_' + str(point_num)
+                                if line_num not in out_dict[dict_key][channel_set]['traceData']:
+                                    out_dict[dict_key][channel_set]['traceData'][line_num] = {}
+                                if point_num not in out_dict[dict_key][channel_set]['traceData']:
+                                    out_dict[dict_key][channel_set]['traceData'][line_num][point_num] = {}
+                                out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header'] = {}
+                                out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['sensorType_code'] = sensor_type
+                                out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] = trace_header['numberOfSamplesPerTrace']
+
+                        # Get trace data
+                        if out_dict['file_header']['trace_format_code'] == '8058':
+                            trace_data = self.read_32bit_IEEE_trace_data(start_byte, out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
+                            start_byte += out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 4
+                        elif out_dict['file_header']['trace_format_code'] == '8036':
+                            trace_data = self.read_24bit_trace_data(start_byte, out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
+                            start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 3
+                        else:
+                            print('Format code for trace data (' + out_dict['file_header']['trace_format_code'] + ') not yet supported. Exiting.')
+                            return None
+
+                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_data'] = trace_data
+
+
+            # Collapse scan type number and channel set number to match levels of SEG-D rev 3.0 out_dict:
+            new_out_dict = {}
+            
+            # Preserve the 'file_header' key without modification
+            if 'file_header' in out_dict:
+                new_out_dict['file_header'] = out_dict['file_header']
+        
+            # Iterate over the main keys (except 'file_header') to collapse nested levels
+            for first_key, first_value in out_dict.items():
+                if first_key == 'file_header':
+                    continue  # Skip 'file_header' as it should not be collapsed
+        
+                for second_key, second_value in first_value.items():
+                    # Form the new key by combining the first and second level keys
+                    combined_key = f"{first_key}_{second_key}"
+                    
+                    # Add the entries under the combined key in the collapsed dictionary
+                    new_out_dict[combined_key] = second_value
+
+            out_dict = new_out_dict
                 
         return out_dict
 
 
-def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, reader_verbose = False):
+def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, reader_verbose = False, forced_segd_version = None):
     '''
-    Reads a Sercel SEG-D revision 3.0 file and returns an obspy stream
+    Reads a Sercel SEG-D file and returns an obspy stream
+    Currently supports SEG-D revisions 2.1 and 3.0
     '''
 
     # Initiate obspy stream for all data in filelist
@@ -865,9 +1159,12 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
         reader.open_file()
     
         # Get key header info and trace data:
-        data = reader.get_data_plus_key_headers()
+        data = reader.get_data_plus_key_headers(force_version=forced_segd_version)
+
+        if data is None:
+            return None
     
-        channel_sets = [key for key in list(data.keys()) if 'channelSet' in key]
+        channel_sets = [key for key in list(data.keys()) if 'file_header' not in key]
         channel_sets.sort()
         line_nums = [list(data[chan_set]['traceData'].keys()) for chan_set in channel_sets]
     
@@ -881,8 +1178,9 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                     trace_h, trace_d = data[chan_set]['traceData'][line_num][trace_num]['trace_header'], np.array(data[chan_set]['traceData'][line_num][trace_num]['trace_data'], dtype=np.float32)
 
                     if remove_gaps:
-                        if trace_h['timeZero_utc'] == UTCDateTime("1980-01-06T00:00:00.000000Z"):
-                            continue
+                        if 'timeZero_utc' in trace_h:
+                            if trace_h['timeZero_utc'] <= UTCDateTime("1980-01-07T00:00:00.000000Z"):
+                                continue
 
                     if 'serialNumber' not in trace_h:
                         trace_h['serialNumber'] = line_num + '_' + trace_num
@@ -903,8 +1201,11 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                     else:
                         tr.stats.network = network_code
                         tr.stats.station = str(trace_h['serialNumber'])
-    
-                    sample_rate = data[chan_set]['description']['samplingInterval'] / 1e6 # Given in microseconds
+
+                    if 'samplingInterval' in data[chan_set]['description']:
+                        sample_rate = data[chan_set]['description']['samplingInterval'] / 1e6 # Given in microseconds
+                    else:
+                        sample_rate = data['file_header']['dominant_sampling_interval_microsec'] / 1e6 # Given in microseconds
                     tr.stats.delta = sample_rate
                     
                     if (1./sample_rate) >= 1000:
@@ -923,26 +1224,29 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                         tr.stats.channel += serial_to_station_name_dict[trace_h['serialNumber']]['component']
                     else:
                         tr.stats.channel += SENSOR_CODE[instrument_code]
-                
-                    # tr.stats.starttime = trace_h['timeZero_utc']
+
                     tr.stats.starttime = data['file_header']['record_timezero_utc']
                     tr.stats.segd = {}
                     tr.stats.segd['serialNumber'] = str(trace_h['serialNumber'])
                     tr.stats.segd.update(data['file_header'])
-                    tr.stats.segd['gainControl'] = CHANNEL_GAIN_CONTROL_CODE[data[chan_set]['description']['channelGainControl']]
-                    tr.stats.segd['aliasFilterFrequency'] = data[chan_set]['description']['aliasFilterFrequency']
-                    tr.stats.segd['lowCutFilterFrequency'] = data[chan_set]['description']['lowCutFilterFrequency']
-                    tr.stats.segd['aliasFilterSlope'] = data[chan_set]['description']['aliasFilterSlope']
-                    tr.stats.segd['lowCutFilterSlope'] = data[chan_set]['description']['lowCutFilterSlope']
-                    tr.stats.segd['notchFrequency'] = data[chan_set]['description']['notchFrequency']
-                    tr.stats.segd['secondNotchFrequency'] = data[chan_set]['description']['secondNotchFrequency']
-                    tr.stats.segd['thirdNotchFrequency'] = data[chan_set]['description']['thirdNotchFrequency']
-                    tr.stats.segd['filterPhase'] = FILTER_PHASE_CODE[data[chan_set]['description']['filterPhase']]
-                    tr.stats.segd['filterDelaySecs'] = data[chan_set]['description']['filterDelay'] / 1e6
-                    tr.stats.segd['DSM'] = data[chan_set]['description']['descaleMultiplier']
+                    tr.stats.segd.update(data[chan_set]['description'])
+                    
+                    # tr.stats.segd['gainControl'] = CHANNEL_GAIN_CONTROL_CODE[data[chan_set]['description']['channelGainControl']]
+                    # tr.stats.segd['aliasFilterFrequency'] = data[chan_set]['description']['aliasFilterFrequency']
+                    # tr.stats.segd['lowCutFilterFrequency'] = data[chan_set]['description']['lowCutFilterFrequency']
+                    # tr.stats.segd['aliasFilterSlope'] = data[chan_set]['description']['aliasFilterSlope']
+                    # tr.stats.segd['lowCutFilterSlope'] = data[chan_set]['description']['lowCutFilterSlope']
+                    # tr.stats.segd['notchFrequency'] = data[chan_set]['description']['notchFrequency']
+                    # tr.stats.segd['secondNotchFrequency'] = data[chan_set]['description']['secondNotchFrequency']
+                    # tr.stats.segd['thirdNotchFrequency'] = data[chan_set]['description']['thirdNotchFrequency']
+                    # tr.stats.segd['filterPhase'] = FILTER_PHASE_CODE[data[chan_set]['description']['filterPhase']]
+                    # tr.stats.segd['filterDelaySecs'] = data[chan_set]['description']['filterDelay'] / 1e6
+                    # tr.stats.segd['DSM'] = data[chan_set]['description']['descaleMultiplier']
+                    
                     if 'sensorSensitivity' in trace_h:
                         tr.stats.segd['sensitivity'] = trace_h['sensorSensitivity']
-                    tr.stats.segd['physicalUnit'] = PHYSICAL_UNIT_CODE[trace_h['physicalUnit_code']]
+                    if 'physicalUnit' in trace_h:
+                        tr.stats.segd['physicalUnit'] = PHYSICAL_UNIT_CODE[trace_h['physicalUnit_code']]
                     if 'latitude' in trace_h:
                         tr.stats.segd['latitude'] = trace_h['latitude']
                     if 'longitude' in trace_h:

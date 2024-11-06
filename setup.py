@@ -1,16 +1,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="SEGD_rev3_reader",
+    name="SEGD_reader",
     version="0.1",
-    description="A Python package to read seismic data from SEG-D rev 3.0 format",
+    description="A Python package to read seismic data from SEG-D format",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/sachalapins/segd_rev3_reader",
+    url="https://github.com/SEGDreader/segd_reader",
     license="MIT",
-    packages=find_packages(exclude=["examples", "extra", "build", "dist"]),
+    packages=find_packages(exclude=["examples", "extra", "build", "dist", "segd_docs"]),
     package_data={
-        "SEGD_rev3_reader": ["segd_rev3_csv_headers/*"],
+        "SEGD_reader": ["segd_csv_headers/**/*"],
     },
     include_package_data=True,
     install_requires=[
