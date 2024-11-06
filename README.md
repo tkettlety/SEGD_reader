@@ -46,7 +46,7 @@ See the LICENSE file / file headers for more details.
 ## Version history:
 
 ### 0.3 (6th Nov 2024) - Current Version
-- Updated reader code to reader SEG-D revision 2.1 data (tested on SmartSolo node data)
+- Updated reader code to read SEG-D revision 2.1 data (tested on SmartSolo node data)
 - Renamed package to SEGD_reader to reflect no longer for revision 3.0 only
 - Included example notebook for SmartSolo node file
 
