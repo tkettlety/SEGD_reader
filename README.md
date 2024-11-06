@@ -29,7 +29,7 @@ SEGD_reader/
 ├── examples/                     
 │   ├── sercel_rev3_0_example.ipynb      # Example notebook for reading Sercel WiNG DFU node data (Costa Rica TAPIR deployment)
 │   ├── stryde_rev3_0_example.ipynb      # Example notebook for reading Stryde node data (which deployment?)
-│   ├── smartsolo_rev2_1_example.ipynb   # Example notebook for reading Stryde node data (which deployment?)
+│   ├── smartsolo_rev2_1_example.ipynb   # Example notebook for reading SmartSolo node data (which deployment?)
 │   └── data/                  
 │       └── ...                          # Example SEG-D files
 ├── pyproject.toml                       # Build configuration file
