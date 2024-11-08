@@ -315,7 +315,7 @@ class SEG_D_Reader:
                 return leap_sec
         return 0
     
-    def segd_timestamp_to_UCTDateTime(self, gps_timestamp):
+    def segd_timestamp_to_UTCDateTime(self, gps_timestamp):
         """Convert SEG-D GPS timestamp to UTC."""
         gps_epoch = datetime.datetime(1980, 1, 6, 0, 0, 0)
         
@@ -925,7 +925,7 @@ class SEG_D_Reader:
         out_dict['file_header']['dominant_sampling_interval_microsec'] = samplingInterval
         
         if int(self.major_version) >= 3:
-            timezero = self.segd_timestamp_to_UCTDateTime(gen_head3['timeZero'])
+            timezero = self.segd_timestamp_to_UTCDateTime(gen_head3['timeZero'])
         else:
             timezero = UTCDateTime("20" + gen_head1['year'].zfill(2) + gen_head1['day'].zfill(3) + "T" + gen_head1['hour'].zfill(2) + gen_head1['minute'].zfill(2) + gen_head1['second'].zfill(2))
         
@@ -960,7 +960,7 @@ class SEG_D_Reader:
                 #### NEED TO FIGURE OUT WHAT TO DO WHEN 'Number of scan type headers' is a weird value
                 # Looks like seismic data always has '1' of these headers though so can just output data at this point
                 if int(out_dict['channelSet_' + str(channel_set + 1)]['description']['scanTypeNumber']) > 1:
-                    return out_dict
+                    continue
                     
                 num_trace_headers = out_dict['channelSet_' + str(channel_set + 1)]['description']['numberTraceHeaderExtensions']
                 num_traces = out_dict['channelSet_' + str(channel_set + 1)]['description']['numberOfChannelsThisSet']
@@ -997,7 +997,7 @@ class SEG_D_Reader:
                             tmp = self.read_other_header(start_byte)
                             if type(tmp) is dict:
                                 if tmp['headerBlockType'] == 66:
-                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['timeZero_utc'] = self.segd_timestamp_to_UCTDateTime(tmp['timeZero'])
+                                    out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['timeZero_utc'] = self.segd_timestamp_to_UTCDateTime(tmp['timeZero'])
                                 elif tmp['headerBlockType'] == 65:
                                     out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['sensorSensitivity'] = tmp['sensorSensitivity']
                                     out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['serialNumber'] = tmp['serialNumber']
@@ -1030,7 +1030,7 @@ class SEG_D_Reader:
             # For SEG-D version 2.1
             additional_gen_head_blocks = int(gen_head1['generalHeaderBlocks'])       # Number of additional general header blocks, including general header 2
             scan_types_per_record = int(gen_head1['scanTypesPerRecord'])             # Number of scan types per record (loop through these?)
-            channel_sets_per_scan_type = int(gen_head1['channelSetsPerScanType'])              # Number of channel sets per scan type (nested loop?)
+            channel_sets_per_scan_type = int(gen_head1['channelSetsPerScanType'])    # Number of channel sets per scan type (nested loop?)
             num_additional_headers_per_scan_type = int(gen_head1['skewBlocks'])      # Number of 32 byte headers following each scan type header
             extended_headers = gen_head1['extendedHeaderBlocks']                     # Number of 32 byte extended headers (additional equipment info)
             if 'f' in extended_headers:
@@ -1048,7 +1048,6 @@ class SEG_D_Reader:
             for _ in range(scan_types_per_record):
                 for _ in range(channel_sets_per_scan_type):
                     channel_set_header = self.read_scan_type_header(start_byte)
-                    
                     if (int(channel_set_header['scanTypeNumber']) > 0) and (int(channel_set_header['channelSetNumber']) > 0):
                         scan_type_number = channel_set_header['scanTypeNumber']
                         if scan_type_number not in out_dict:
@@ -1075,44 +1074,49 @@ class SEG_D_Reader:
                     continue
                 else:
                     for channel_set in list(out_dict[dict_key].keys()):
-                        tmp = self.read_demux_trace_header(start_byte)
-                        start_byte += 20
-                        num_trace_extension_headers = tmp['traceHeaderExtension']
-                        for _ in range(int(num_trace_extension_headers)):
-                            trace_header = self.read_trace_header_extension(start_byte)
-                            start_byte += 32
-
-                            # If sensor type defined (> 0 and < 10), get line and point number for data
-                            sensor_type = trace_header['sensorType']
-                            if (sensor_type > 0) and (sensor_type < 10):
-                                line_num = trace_header['receiverLineNumber']
-                                if line_num < 0:
-                                    line_num = trace_header['extendedReceiverLineNumberInteger']
-                                    line_num = 'line_' + str(line_num)
-                                point_num = trace_header['receiverPointNumber']
-                                if point_num < 0:
-                                    point_num = trace_header['extendedReceiverPointNumberInteger']
-                                    point_num = 'point_' + str(point_num)
-                                if line_num not in out_dict[dict_key][channel_set]['traceData']:
-                                    out_dict[dict_key][channel_set]['traceData'][line_num] = {}
-                                if point_num not in out_dict[dict_key][channel_set]['traceData']:
-                                    out_dict[dict_key][channel_set]['traceData'][line_num][point_num] = {}
-                                out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header'] = {}
-                                out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['sensorType_code'] = sensor_type
-                                out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] = trace_header['numberOfSamplesPerTrace']
-
-                        # Get trace data
-                        if out_dict['file_header']['trace_format_code'] == '8058':
-                            trace_data = self.read_32bit_IEEE_trace_data(start_byte, out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
-                            start_byte += out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 4
-                        elif out_dict['file_header']['trace_format_code'] == '8036':
-                            trace_data = self.read_24bit_trace_data(start_byte, out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'])
-                            start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['numSamplesPerTrace'] * 3
-                        else:
-                            print('Format code for trace data (' + out_dict['file_header']['trace_format_code'] + ') not yet supported. Exiting.')
-                            return None
-
-                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num]['trace_data'] = trace_data
+                        num_traces = int(out_dict[dict_key][channel_set]['description']['numberOfChannelsThisSet'])
+                        for trace in range(num_traces):
+                            tmp = self.read_demux_trace_header(start_byte)
+                            start_byte += 20
+                            trace_num = tmp['traceNumber']
+                            num_trace_extension_headers = tmp['traceHeaderExtension']
+                            for _ in range(int(num_trace_extension_headers)):
+                                trace_header = self.read_trace_header_extension(start_byte)
+                                start_byte += 32
+    
+                                # If sensor type defined (> 0 and < 10), get line and point number for data
+                                sensor_type = trace_header['sensorType']
+                                if (sensor_type > 0) and (sensor_type < 10):
+                                    line_num = trace_header['receiverLineNumber']
+                                    if line_num < 0:
+                                        line_num = trace_header['extendedReceiverLineNumberInteger']
+                                        line_num = 'line_' + str(line_num)
+                                    point_num = trace_header['receiverPointNumber']
+                                    if point_num < 0:
+                                        point_num = trace_header['extendedReceiverPointNumberInteger']
+                                        point_num = 'point_' + str(point_num)
+                                    if line_num not in out_dict[dict_key][channel_set]['traceData']:
+                                        out_dict[dict_key][channel_set]['traceData'][line_num] = {}
+                                    if point_num not in out_dict[dict_key][channel_set]['traceData'][line_num]:
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num] = {}
+                                    if trace_num not in out_dict[dict_key][channel_set]['traceData'][line_num][point_num]:
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num] = {}
+                                    out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header'] = {}
+                                    out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['sensorType_code'] = sensor_type
+                                    out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['numSamplesPerTrace'] = trace_header['numberOfSamplesPerTrace']
+    
+                            # Get trace data
+                            if out_dict['file_header']['trace_format_code'] == '8058':
+                                trace_data = self.read_32bit_IEEE_trace_data(start_byte, out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['numSamplesPerTrace'])
+                                start_byte += out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['numSamplesPerTrace'] * 4
+                            elif out_dict['file_header']['trace_format_code'] == '8036':
+                                trace_data = self.read_24bit_trace_data(start_byte, out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['numSamplesPerTrace'])
+                                start_byte += out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num][trace_num]['trace_header']['numSamplesPerTrace'] * 3
+                            else:
+                                print('Format code for trace data (' + out_dict['file_header']['trace_format_code'] + ') not yet supported. Exiting.')
+                                return None
+    
+                            out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_data'] = trace_data
 
 
             # Collapse scan type number and channel set number to match levels of SEG-D rev 3.0 out_dict:
@@ -1172,10 +1176,33 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
             if len(line_num_list) < 1:
                 continue
             for line_num in line_num_list:
-                for trace_num in list(data[chan_set]['traceData'][line_num].keys()):
-                    if 'trace_data' not in data[chan_set]['traceData'][line_num][trace_num]:
-                        continue
-                    trace_h, trace_d = data[chan_set]['traceData'][line_num][trace_num]['trace_header'], np.array(data[chan_set]['traceData'][line_num][trace_num]['trace_data'], dtype=np.float32)
+                for point_num in list(data[chan_set]['traceData'][line_num].keys()):
+                    if 'trace_data' not in data[chan_set]['traceData'][line_num][point_num]:
+                        # SEG-D v2.1 code has additional level to dict (trace_num), so check if this exists:
+                        if len(list(data[chan_set]['traceData'][line_num][point_num].keys())) > 0:
+                            # Extract the first trace section header as the base header for concatenated trace
+                            first_trace = next(iter(data[chan_set]['traceData'][line_num][point_num]))
+                            # Check if more than one trace for this sensor (point_num):
+                            if len(list(data[chan_set]['traceData'][line_num][point_num].keys())) > 1:
+                                # Initialize an empty list to hold trace data for concatenation
+                                combined_trace_data = []
+                                combined_header = data[chan_set]['traceData'][line_num][point_num][first_trace]['trace_header'].copy()
+                                # Initialize the total sample count
+                                total_trace_samples = 0
+                                # Iterate over each trace_num ('0001', '0002', etc.) to gather data
+                                for trace_key, trace_data in data[chan_set]['traceData'][line_num][point_num].items():
+                                    # Add the trace data to the combined list
+                                    combined_trace_data.extend(trace_data['trace_data'])
+                                    # Update the total sample count
+                                    total_trace_samples += trace_data['trace_header']['numSamplesPerTrace']
+                                
+                                # Update the combined header's 'numberOfSamplesInTrace' field
+                                combined_header['numSamplesPerTrace'] = total_trace_samples
+                            # Overwrite the dictionary for this point_num to contain only the combined data
+                            data[chan_set]['traceData'][line_num][point_num] = {'trace_header': combined_header, 'trace_data': combined_trace_data}
+                        else:
+                            continue
+                    trace_h, trace_d = data[chan_set]['traceData'][line_num][point_num]['trace_header'], np.array(data[chan_set]['traceData'][line_num][point_num]['trace_data'], dtype=np.float32)
 
                     if remove_gaps:
                         if 'timeZero_utc' in trace_h:
@@ -1183,7 +1210,7 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                                 continue
 
                     if 'serialNumber' not in trace_h:
-                        trace_h['serialNumber'] = line_num + '_' + trace_num
+                        trace_h['serialNumber'] = line_num + '_' + point_num
                     
                     # check if all traces can be converted to int
                     convert_to_int = convert_to_int and np.all(np.mod(trace_d, 1) == 0)
