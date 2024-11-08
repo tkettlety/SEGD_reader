@@ -1061,8 +1061,8 @@ class SEG_D_Reader:
                     start_byte += 32
             
                 # Not sure what to do with skew blocks yet (the number of these is zero in SmartSolo example file)
-                if int(gen_head1['skewBlocks']) > 0:
-                    for skew_block in range(int(gen_head1['skewBlocks'])):
+                if num_additional_headers_per_scan_type > 0:
+                    for skew_block in range(num_additional_headers_per_scan_type):
                         skew_block_header = self.read_scan_type_header(start_byte) 
                         start_byte += 32
 
@@ -1086,7 +1086,7 @@ class SEG_D_Reader:
     
                                 # If sensor type defined (> 0 and < 10), get line and point number for data
                                 sensor_type = trace_header['sensorType']
-                                if (sensor_type > 0) and (sensor_type < 10):
+                                if (sensor_type > 0) and (sensor_type < 10) and (trace_header['numberOfSamplesPerTrace'] > 0):
                                     line_num = trace_header['receiverLineNumber']
                                     if line_num < 0:
                                         line_num = trace_header['extendedReceiverLineNumberInteger']
@@ -1143,7 +1143,7 @@ class SEG_D_Reader:
         return out_dict
 
 
-def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, reader_verbose = False, forced_segd_version = None):
+def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, reader_verbose = False, forced_segd_version = None, debug=False):
     '''
     Reads a Sercel SEG-D file and returns an obspy stream
     Currently supports SEG-D revisions 2.1 and 3.0
@@ -1183,21 +1183,21 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                             # Extract the first trace section header as the base header for concatenated trace
                             first_trace = next(iter(data[chan_set]['traceData'][line_num][point_num]))
                             # Check if more than one trace for this sensor (point_num):
-                            if len(list(data[chan_set]['traceData'][line_num][point_num].keys())) > 1:
-                                # Initialize an empty list to hold trace data for concatenation
-                                combined_trace_data = []
-                                combined_header = data[chan_set]['traceData'][line_num][point_num][first_trace]['trace_header'].copy()
-                                # Initialize the total sample count
-                                total_trace_samples = 0
-                                # Iterate over each trace_num ('0001', '0002', etc.) to gather data
-                                for trace_key, trace_data in data[chan_set]['traceData'][line_num][point_num].items():
-                                    # Add the trace data to the combined list
-                                    combined_trace_data.extend(trace_data['trace_data'])
-                                    # Update the total sample count
-                                    total_trace_samples += trace_data['trace_header']['numSamplesPerTrace']
-                                
-                                # Update the combined header's 'numberOfSamplesInTrace' field
-                                combined_header['numSamplesPerTrace'] = total_trace_samples
+                            # if len(list(data[chan_set]['traceData'][line_num][point_num].keys())) > 1:
+                            # Initialize an empty list to hold trace data for concatenation
+                            combined_trace_data = []
+                            combined_header = data[chan_set]['traceData'][line_num][point_num][first_trace]['trace_header'].copy()
+                            # Initialize the total sample count
+                            total_trace_samples = 0
+                            # Iterate over each trace_num ('0001', '0002', etc.) to gather data
+                            for trace_key, trace_data in data[chan_set]['traceData'][line_num][point_num].items():
+                                # Add the trace data to the combined list
+                                combined_trace_data.extend(trace_data['trace_data'])
+                                # Update the total sample count
+                                total_trace_samples += trace_data['trace_header']['numSamplesPerTrace']
+                            
+                            # Update the combined header's 'numberOfSamplesInTrace' field
+                            combined_header['numSamplesPerTrace'] = total_trace_samples
                             # Overwrite the dictionary for this point_num to contain only the combined data
                             data[chan_set]['traceData'][line_num][point_num] = {'trace_header': combined_header, 'trace_data': combined_trace_data}
                         else:
@@ -1210,7 +1210,7 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                                 continue
 
                     if 'serialNumber' not in trace_h:
-                        trace_h['serialNumber'] = line_num + '_' + point_num
+                        trace_h['serialNumber'] = str(line_num) + '_' + str(point_num)
                     
                     # check if all traces can be converted to int
                     convert_to_int = convert_to_int and np.all(np.mod(trace_d, 1) == 0)
@@ -1257,18 +1257,6 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                     tr.stats.segd['serialNumber'] = str(trace_h['serialNumber'])
                     tr.stats.segd.update(data['file_header'])
                     tr.stats.segd.update(data[chan_set]['description'])
-                    
-                    # tr.stats.segd['gainControl'] = CHANNEL_GAIN_CONTROL_CODE[data[chan_set]['description']['channelGainControl']]
-                    # tr.stats.segd['aliasFilterFrequency'] = data[chan_set]['description']['aliasFilterFrequency']
-                    # tr.stats.segd['lowCutFilterFrequency'] = data[chan_set]['description']['lowCutFilterFrequency']
-                    # tr.stats.segd['aliasFilterSlope'] = data[chan_set]['description']['aliasFilterSlope']
-                    # tr.stats.segd['lowCutFilterSlope'] = data[chan_set]['description']['lowCutFilterSlope']
-                    # tr.stats.segd['notchFrequency'] = data[chan_set]['description']['notchFrequency']
-                    # tr.stats.segd['secondNotchFrequency'] = data[chan_set]['description']['secondNotchFrequency']
-                    # tr.stats.segd['thirdNotchFrequency'] = data[chan_set]['description']['thirdNotchFrequency']
-                    # tr.stats.segd['filterPhase'] = FILTER_PHASE_CODE[data[chan_set]['description']['filterPhase']]
-                    # tr.stats.segd['filterDelaySecs'] = data[chan_set]['description']['filterDelay'] / 1e6
-                    # tr.stats.segd['DSM'] = data[chan_set]['description']['descaleMultiplier']
                     
                     if 'sensorSensitivity' in trace_h:
                         tr.stats.segd['sensitivity'] = trace_h['sensorSensitivity']
