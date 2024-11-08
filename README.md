@@ -38,6 +38,12 @@ SEGD_reader/
 └── LICENSE                              # License file
 ```
 
+## Known issues:
+- Doesn't extract sensitivity from rev 2.1 data (can't find in generic headers, must be in manufacturer header?)
+- Sensitivity (gain) correction not yet applied
+- Need to find polarity correction too (sometimes positive sometimes negative)
+- License needs updating to reflect non-commerical use and to credit initial source of revision 2.1 csv files
+
 ## License
 
 This package is open-source and licensed under the MIT License.
@@ -45,12 +51,17 @@ See the LICENSE file / file headers for more details.
 
 ## Version history:
 
-### 0.3 (6th Nov 2024) - Current Version
+### 0.3.1 (8th Nov 2024) - Current Version
+- Fixed reader code to read all traces in SEG-D revision 2.1 data
+- Updated SmartSolo example notebook to reflect above changes
+- Tested on SmartSolo and Sercel SEG-D revision 2.1 data
+
+### 0.3.0 (6th Nov 2024)
 - Updated reader code to read SEG-D revision 2.1 data (tested on SmartSolo node data)
 - Renamed package to SEGD_reader to reflect no longer for revision 3.0 only
 - Included example notebook for SmartSolo node file
 
-### 0.2 (4th Nov 2024)
+### 0.2.0 (4th Nov 2024)
 - Updated reader code to read Stryde node data
 - Possible issues on Stryde data:
     - Need to identify where GPS location info is stored
@@ -58,7 +69,7 @@ See the LICENSE file / file headers for more details.
     - Are timings okay? Example file is just over 1 hour.
 
 
-### 0.1 (1st Nov 2024)
+### 0.1.0 (1st Nov 2024)
 - Initial release of SEGD_rev3_reader
 - Only trialled on Sercel WiNG DFU node data
 - Limited functionality (reads header/trace data and returns as dictionary or obspy stream)
