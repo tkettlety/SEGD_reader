@@ -1178,6 +1178,8 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
             for line_num in line_num_list:
                 for point_num in list(data[chan_set]['traceData'][line_num].keys()):
                     if 'trace_data' not in data[chan_set]['traceData'][line_num][point_num]:
+                        if 'trace_header' in data[chan_set]['traceData'][line_num][point_num]:
+                            continue
                         # SEG-D v2.1 code has additional level to dict (trace_num), so check if this exists:
                         if len(list(data[chan_set]['traceData'][line_num][point_num].keys())) > 0:
                             # Extract the first trace section header as the base header for concatenated trace
