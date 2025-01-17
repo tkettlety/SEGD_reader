@@ -51,7 +51,10 @@ See the LICENSE file / file headers for more details.
 
 ## Version history:
 
-### 0.3.1 (8th Nov 2024) - Current Version
+### 0.3.2 (17th Jan 2025) - Current Version
+- Updated SEG_D_to_stream function to apply descale multiplier from trace header
+
+### 0.3.1 (8th Nov 2024)
 - Fixed reader code to read all traces in SEG-D revision 2.1 data
 - Updated SmartSolo example notebook to reflect above changes
 - Tested on SmartSolo and Sercel SEG-D revision 2.1 data
