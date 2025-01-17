@@ -1214,12 +1214,7 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                     if 'serialNumber' not in trace_h:
                         trace_h['serialNumber'] = str(line_num) + '_' + str(point_num)
                     
-                    # check if all traces can be converted to int
-                    convert_to_int = convert_to_int and np.all(np.mod(trace_d, 1) == 0)
-    
                     tr = Trace(trace_d)
-                    if convert_to_int:
-                        tr.data = tr.data.astype(np.int32)
 
                     if serial_to_station_name_dict is not None:
                         if 'network' in serial_to_station_name_dict[trace_h['serialNumber']]:
@@ -1259,6 +1254,15 @@ def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict
                     tr.stats.segd['serialNumber'] = str(trace_h['serialNumber'])
                     tr.stats.segd.update(data['file_header'])
                     tr.stats.segd.update(data[chan_set]['description'])
+
+                    if (use_descale_multiplier) & ('descaleMultiplier' in list(tr.stats.segd.keys())):
+                        tr.data = tr.data * float(tr.stats.segd['descaleMultiplier'])
+                                                  
+                    # Check if all traces can be converted to int
+                    convert_to_int = convert_to_int and np.all(np.mod(tr.data, 1) == 0)
+    
+                    if convert_to_int:
+                        tr.data = tr.data.astype(np.int32)
                     
                     if 'sensorSensitivity' in trace_h:
                         tr.stats.segd['sensitivity'] = trace_h['sensorSensitivity']
