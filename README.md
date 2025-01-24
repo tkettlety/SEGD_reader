@@ -53,6 +53,7 @@ See the LICENSE file / file headers for more details.
 
 ### 0.3.2 (17th Jan 2025) - Current Version
 - Updated SEG_D_to_stream function to apply descale multiplier from trace header
+- Updated checks when trying to rotate from Galperin configuration to ENZ (utils)
 
 ### 0.3.1 (8th Nov 2024)
 - Fixed reader code to read all traces in SEG-D revision 2.1 data
