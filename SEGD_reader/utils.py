@@ -77,33 +77,38 @@ def rotate_galperin_to_ENZ(stream, first_component_orientation="W", tilt_angle=3
     # Loop through stations and change those with three components for total duration of stream:
     for sta in stations:
         st = stream.select(station=sta)
+
+        # Do checks (must have 3 components and non-zero data on all components)
+        if (len(st) != 3) or (np.any([np.all(tr.data == 0) for tr in st])):
+            continue
+
         st.sort() # Need component order to be sorted
-        if len(st) == 3:
-            components_list = [tr.stats.component for tr in st]
-            npts_list = [tr.stats.npts for tr in st]
-            if (all(c in ['1', '2', '3', 'U', 'V', 'W'] for c in components_list)) & (all(n == npts_list[0] for n in npts_list)):
-                # Try rotate data
-                try:
-                    st.detrend("demean") # Mean removal probably necessary, as large offsets between sensors will overly scale combination?
-                    zne_data = np.dot(transformation_matrix, np.array([st[0].data, st[1].data, st[2].data]))
-                except:
-                    continue
-                
-                # Remove traces from stream if successful
-                for tr in st:
-                    stream.remove(tr)
+        
+        components_list = [tr.stats.component for tr in st]
+        npts_list = [tr.stats.npts for tr in st]
+        if (all(c in ['1', '2', '3', 'U', 'V', 'W'] for c in components_list)) & (all(n == npts_list[0] for n in npts_list)):
+            # Try rotate data
+            try:
+                st.detrend("demean") # Mean removal probably necessary, as large offsets between sensors will overly scale combination?
+                zne_data = np.dot(transformation_matrix, np.array([st[0].data, st[1].data, st[2].data]))
+            except:
+                continue
+            
+            # Remove traces from stream if successful
+            for tr in st:
+                stream.remove(tr)
 
-                # Replace st data, change component name, then add back to st:
-                st[0].data = zne_data[0,:]
-                st[1].data = zne_data[1,:]
-                st[2].data = zne_data[2,:]
-                st[0].stats.channel = st[0].stats.channel[:-1] + 'E'
-                st[1].stats.channel = st[1].stats.channel[:-1] + 'N'
-                st[2].stats.channel = st[2].stats.channel[:-1] + 'Z'
+            # Replace st data, change component name, then add back to st:
+            st[0].data = zne_data[0,:]
+            st[1].data = zne_data[1,:]
+            st[2].data = zne_data[2,:]
+            st[0].stats.channel = st[0].stats.channel[:-1] + 'E'
+            st[1].stats.channel = st[1].stats.channel[:-1] + 'N'
+            st[2].stats.channel = st[2].stats.channel[:-1] + 'Z'
 
-                # Add traces back to stream
-                for tr in st:
-                    stream.append(tr)
+            # Add traces back to stream
+            for tr in st:
+                stream.append(tr)
 
     stream.sort()
     return stream
