@@ -48,6 +48,7 @@ def rotate_galperin_to_ENZ(stream, first_component_orientation="W", tilt_angle=3
 
     alpha = np.pi*(tilt_angle / 180) # tilt angle from horizontal (default is 35.26 degrees)
     if first_component_orientation == 'N':
+        # TAPIR configuration
         beta = np.pi*(120/180) # orientation of V (2nd) component wrt North (120 degrees clockwise)
         
         # Transformation matrix to convert to ENZ
