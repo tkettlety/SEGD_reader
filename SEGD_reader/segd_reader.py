@@ -1256,13 +1256,7 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
                     tr.stats.segd.update(data[chan_set]['description'])
 
                     if (use_descale_multiplier) & ('descaleMultiplier' in list(tr.stats.segd.keys())):
-                        tr.data = tr.data * float(tr.stats.segd['descaleMultiplier'])
-                                                  
-                    # Check if all traces can be converted to int
-                    convert_to_int = convert_to_int and np.all(np.mod(tr.data, 1) == 0)
-    
-                    if convert_to_int:
-                        tr.data = tr.data.astype(np.int32)
+                        tr.data = tr.data * np.float32(float(tr.stats.segd['descaleMultiplier']))
                     
                     if 'sensorSensitivity' in trace_h:
                         tr.stats.segd['sensitivity'] = trace_h['sensorSensitivity']
@@ -1274,11 +1268,23 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
                         tr.stats.segd['longitude'] = trace_h['longitude']
                     if 'elevation' in trace_h:
                         tr.stats.segd['elevation'] = trace_h['elevation']
-                    st.append(tr)
+
+                    st += tr
                     
         reader.close_file()
-       
-    st.merge() # Merge consecutive files
+
+    # Check if all traces can be converted to int
+    convert_to_int = convert_to_int and np.all([(np.mod(tr.data, 1) == 0) for tr in st])
+    
+    if convert_to_int:
+        for tr in st:
+            tr.data = tr.data.astype(np.int32)
+    
+    try:
+        st.merge() # Merge consecutive files
+    except Exception as e:
+        # Handle the exception or ignore it
+        print(f"Ignoring error: {e}")
 
     return st
 
