@@ -8,7 +8,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/SEGDreader/segd_reader",
     license="MIT",
-    packages=find_packages(exclude=["examples", "extra", "build", "dist", "segd_docs"]),
+    packages=find_packages(exclude=["examples", "extras", "build", "dist", "segd_docs"]),
     package_data={
         "SEGD_reader": ["segd_csv_headers/**/*"],
     },
