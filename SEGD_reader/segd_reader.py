@@ -1143,7 +1143,7 @@ class SEG_D_Reader:
         return out_dict
 
 
-def SEG_D_to_stream(filelist, convert_to_int = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, reader_verbose = False, forced_segd_version = None, debug=False):
+def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, reader_verbose = False, forced_segd_version = None, debug=False):
     '''
     Reads a Sercel SEG-D file and returns an obspy stream
     Currently supports SEG-D revisions 2.1 and 3.0
