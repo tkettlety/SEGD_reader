@@ -51,7 +51,7 @@ See the LICENSE file / file headers for more details.
 
 ## Version history:
 
-### 0.3.2 (17th Jan 2025) - Current Version
+### 0.3.2 (24th Jan 2025) - Current Version
 - Updated SEG_D_to_stream function to apply descale multiplier from trace header
 - Updated checks when trying to rotate from Galperin configuration to ENZ (utils)
 
