@@ -40,7 +40,6 @@ SEGD_reader/
 
 ## Known issues:
 - Doesn't extract sensitivity from rev 2.1 data (can't find in generic headers, must be in manufacturer header?)
-- Sensitivity (gain) correction not yet applied
 - Need to find polarity correction too (sometimes positive sometimes negative)
 - License needs updating to reflect non-commerical use and to credit initial source of revision 2.1 csv files
 
