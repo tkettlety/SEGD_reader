@@ -6,7 +6,7 @@ Currently supports SEG-D revisions 2.1 and 3.0.
 
 ## Installation:
 
-To install in dev/editable mode (recommended at this stage), run:
+To install in dev/editable mode (recommended at this stage), `cd` to the repository on your local storage and run:
 ```
 pip install -e .
 ```
