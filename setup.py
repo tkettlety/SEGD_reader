@@ -10,7 +10,7 @@ setup(
     license="MIT",
     packages=find_packages(exclude=["examples", "extras", "build", "dist", "segd_docs"]),
     package_data={
-        "SEGD_reader": ["segd_csv_headers/**/*"],
+        "SEGD_reader": ["segd_csv_headers/**/*", "json/**/*"],
     },
     include_package_data=True,
     install_requires=[
