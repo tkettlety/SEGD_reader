@@ -1,0 +1,1481 @@
+{
+    "_generalHeader1": {
+        "name": "generalHeader1",
+        "length": 32,
+        "fields": [
+            {
+                "name": "fileNumber",
+                "startByte": 1,
+                "endByte": 2,
+                "startNibble": 1,
+                "endNibble": 4,
+                "format": "bcd",
+                "description": "File number (0-9999)"
+            },
+            {
+                "name": "formatCode",
+                "startByte": 3,
+                "endByte": 4,
+                "startNibble": 5,
+                "endNibble": 8,
+                "format": "bcd",
+                "description": "Format code"
+            },
+            {
+                "name": "generalConstants",
+                "startByte": 5,
+                "endByte": 10,
+                "startNibble": 9,
+                "endNibble": 20,
+                "format": "bcd",
+                "description": "General constants"
+            },
+            {
+                "name": "year",
+                "startByte": 11,
+                "endByte": 11,
+                "startNibble": 21,
+                "endNibble": 22,
+                "format": "bcd",
+                "description": "Year (0-99)"
+            },
+            {
+                "name": "generalHeaderBlocks",
+                "startByte": 12,
+                "endByte": 12,
+                "startNibble": 23,
+                "endNibble": 23,
+                "format": "ubin",
+                "description": "Number of additional blocks in General Header"
+            },
+            {
+                "name": "day",
+                "startByte": 12,
+                "endByte": 13,
+                "startNibble": 24,
+                "endNibble": 26,
+                "format": "bcd",
+                "description": "Julian day (1-366)"
+            },
+            {
+                "name": "hour",
+                "startByte": 14,
+                "endByte": 14,
+                "startNibble": 27,
+                "endNibble": 28,
+                "format": "bcd",
+                "description": "Hour of day  (0-23)"
+            },
+            {
+                "name": "minute",
+                "startByte": 15,
+                "endByte": 15,
+                "startNibble": 29,
+                "endNibble": 30,
+                "format": "bcd",
+                "description": "Minute of hour (0-59)"
+            },
+            {
+                "name": "second",
+                "startByte": 16,
+                "endByte": 16,
+                "startNibble": 31,
+                "endNibble": 32,
+                "format": "bcd",
+                "description": "Second of minute (0-59)"
+            },
+            {
+                "name": "manufacturersCode",
+                "startByte": 17,
+                "endByte": 17,
+                "startNibble": 33,
+                "endNibble": 34,
+                "format": "bcd",
+                "description": "Manufacturer's code"
+            },
+            {
+                "name": "manunfacturersSerialNumber",
+                "startByte": 18,
+                "endByte": 19,
+                "startNibble": 35,
+                "endNibble": 38,
+                "format": "bcd",
+                "description": "Manufacturer's serial number"
+            },
+            {
+                "name": "unusedFirst",
+                "startByte": 20,
+                "endByte": 22,
+                "startNibble": 39,
+                "endNibble": 44,
+                "format": "bcd",
+                "description": "Unused in revision 3.0"
+            },
+            {
+                "name": "baseScanInterval",
+                "startByte": 23,
+                "endByte": 23,
+                "startNibble": 45,
+                "endNibble": 46,
+                "format": "ubin",
+                "description": "Base scan interval"
+            },
+            {
+                "name": "polarity",
+                "startByte": 24,
+                "endByte": 24,
+                "startNibble": 47,
+                "endNibble": 47,
+                "format": "bcd",
+                "description": "Polarity"
+            },
+            {
+                "name": "unusedSecond",
+                "startByte": 24,
+                "endByte": 25,
+                "startNibble": 48,
+                "endNibble": 50,
+                "format": "bcd",
+                "description": "Unused in revision 3.0"
+            },
+            {
+                "name": "recordType",
+                "startByte": 26,
+                "endByte": 26,
+                "startNibble": 51,
+                "endNibble": 51,
+                "format": "bcd",
+                "description": "Record type"
+            },
+            {
+                "name": "recordLength",
+                "startByte": 26,
+                "endByte": 27,
+                "startNibble": 52,
+                "endNibble": 54,
+                "format": "bcd",
+                "description": "Record length from time zero (in increments of 0.5 times 1.024 s). "
+            },
+            {
+                "name": "scanTypesPerRecord",
+                "startByte": 28,
+                "endByte": 28,
+                "startNibble": 55,
+                "endNibble": 56,
+                "format": "bcd",
+                "description": "Scan types per record (1-99)"
+            },
+            {
+                "name": "channelSetsPerScanType",
+                "startByte": 29,
+                "endByte": 29,
+                "startNibble": 57,
+                "endNibble": 58,
+                "format": "bcd",
+                "description": "Number of channel sets per scan type (1-99)"
+            },
+            {
+                "name": "skewBlocks",
+                "startByte": 30,
+                "endByte": 30,
+                "startNibble": 59,
+                "endNibble": 60,
+                "format": "bcd",
+                "description": "Skew fields length (0-99). Number of 32 byte extensions to scan type header"
+            },
+            {
+                "name": "extendedHeaderBlocks",
+                "startByte": 31,
+                "endByte": 31,
+                "startNibble": 61,
+                "endNibble": 62,
+                "format": "bcd",
+                "description": "Extended header length (0-99). Number of 32 byte extensions to general header"
+            },
+            {
+                "name": "externalHeaderBlocks",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "bcd",
+                "description": "External header length (0-99). Number of 32 byte extensions to general header"
+            }
+        ]
+    },
+    "0x02": {
+        "name": "generalHeader2",
+        "length": 32,
+        "fields": [
+            {
+                "name": "expandedFileNumber",
+                "startByte": 1,
+                "endByte": 3,
+                "startNibble": 1,
+                "endNibble": 6,
+                "format": "ubin",
+                "description": "Extended file number. (Bytes 1 and 2 of GHB1 must be set to FFFF for ffids greater than 9999)"
+            },
+            {
+                "name": "extendedChannelSetsPerScanType",
+                "startByte": 4,
+                "endByte": 5,
+                "startNibble": 7,
+                "endNibble": 10,
+                "format": "ubin",
+                "description": "Extended channel sets/scan types. (Byte 29 of GHB1 must be set to FF for numbers greater than 99)"
+            },
+            {
+                "name": "extendedHeaderBlocks",
+                "startByte": 6,
+                "endByte": 8,
+                "startNibble": 11,
+                "endNibble": 16,
+                "format": "ubin",
+                "description": "Extended header blocks (Byte 31 of GHB1 must be set to FF if using more than 99 extended header blocks)"
+            },
+            {
+                "name": "extendedSkewBlocks",
+                "startByte": 9,
+                "endByte": 10,
+                "startNibble": 17,
+                "endNibble": 20,
+                "format": "ubin",
+                "description": "Extended skew blocks (Number of 32 byte fields added to end of each scan type header. Zero indicates no skew.)"
+            },
+            {
+                "name": "majorSEGDrevisionNumber",
+                "startByte": 11,
+                "endByte": 11,
+                "startNibble": 21,
+                "endNibble": 22,
+                "format": "ubin",
+                "description": "Major SEG-D revision number"
+            },
+            {
+                "name": "minorSEGDrevisionNumber",
+                "startByte": 12,
+                "endByte": 12,
+                "startNibble": 23,
+                "endNibble": 24,
+                "format": "ubin",
+                "description": "Minor SEG-D revision number"
+            },
+            {
+                "name": "generalTrailerBlocks",
+                "startByte": 13,
+                "endByte": 16,
+                "startNibble": 25,
+                "endNibble": 32,
+                "format": "ubin",
+                "description": "Number of 32-byte General Trailer blocks"
+            },
+            {
+                "name": "extendedRecordLength",
+                "startByte": 17,
+                "endByte": 20,
+                "startNibble": 33,
+                "endNibble": 40,
+                "format": "ubin",
+                "description": "Record length in microseconds."
+            },
+            {
+                "name": "recordSetNumber",
+                "startByte": 21,
+                "endByte": 22,
+                "startNibble": 41,
+                "endNibble": 44,
+                "format": "ubin",
+                "description": "Record set number used to identify this group of records"
+            },
+            {
+                "name": "extendedGeneralHeaderBlocks",
+                "startByte": 23,
+                "endByte": 24,
+                "startNibble": 45,
+                "endNibble": 48,
+                "format": "ubin",
+                "description": "Number of additional Blocks in Gen Header. If 2"
+            },
+            {
+                "name": "dominantSamplingInterval",
+                "startByte": 25,
+                "endByte": 27,
+                "startNibble": 49,
+                "endNibble": 54,
+                "format": "ubin",
+                "description": "Dominant sampling interval in microseconds (1e-6 sec)"
+            },
+            {
+                "name": "externalHeaderBlocks",
+                "startByte": 28,
+                "endByte": 30,
+                "startNibble": 55,
+                "endNibble": 60,
+                "format": "ubin",
+                "description": "External header blocks (when GHB1 byte 32 is FF)."
+            },
+            {
+                "name": "unused",
+                "startByte": 31,
+                "endByte": 31,
+                "startNibble": 61,
+                "endNibble": 62,
+                "format": "ubin",
+                "description": "May have any value."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be set to 2 for GHB2"
+            }
+        ]
+    },
+    "0x03": {
+        "name": "generalHeader3",
+        "length": 32,
+        "fields": [
+            {
+                "name": "timeZero",
+                "startByte": 1,
+                "endByte": 8,
+                "startNibble": 1,
+                "endNibble": 16,
+                "format": "timestamp",
+                "description": "Time Zero for SEG-D timestamp in number of microseconds since the GPS epoch (6 January 1980)."
+            },
+            {
+                "name": "recordSize",
+                "startByte": 9,
+                "endByte": 16,
+                "startNibble": 17,
+                "endNibble": 32,
+                "format": "ubin",
+                "description": "Total size of SEG-D record in number of bytes. May be zero if unknown."
+            },
+            {
+                "name": "dataSize",
+                "startByte": 17,
+                "endByte": 24,
+                "startNibble": 33,
+                "endNibble": 48,
+                "format": "ubin",
+                "description": "Total size of headers and data in this record in number of bytes. Enables skipping of all traces to beginning of trailer."
+            },
+            {
+                "name": "headerSize",
+                "startByte": 25,
+                "endByte": 28,
+                "startNibble": 49,
+                "endNibble": 56,
+                "format": "ubin",
+                "description": "Total size of headers. Enables skipping of all headers to beginning of first trace."
+            },
+            {
+                "name": "extendedRecMode",
+                "startByte": 29,
+                "endByte": 29,
+                "startNibble": 57,
+                "endNibble": 58,
+                "format": "ubin",
+                "description": "Set to 1 if record is using Extended Recording Mode and 0 for normal record."
+            },
+            {
+                "name": "relativeTimeMode",
+                "startByte": 30,
+                "endByte": 30,
+                "startNibble": 59,
+                "endNibble": 60,
+                "format": "ubin",
+                "description": "Set to 1 if record does not contain absolute timestamps or 0 for normal record. If 1 then timeZero must be set to 0. "
+            },
+            {
+                "name": "unused",
+                "startByte": 31,
+                "endByte": 31,
+                "startNibble": 61,
+                "endNibble": 62,
+                "format": "ubin",
+                "description": "Currently unusued and can't take any value"
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be set to 3 for GHB3."
+            }
+        ]
+    },
+    "0x10": {
+        "name": "generalHeader4",
+        "length": 32,
+        "fields": [
+            {
+                "name": "vesselCrewNameShort",
+                "startByte": 1,
+                "endByte": 3,
+                "startNibble": 1,
+                "endNibble": 6,
+                "format": "ascii",
+                "description": "Abbreviated vessel or crew name."
+            },
+            {
+                "name": "vesselCrewNameLong",
+                "startByte": 4,
+                "endByte": 31,
+                "startNibble": 7,
+                "endNibble": 62,
+                "format": "ascii",
+                "description": "Vessel or crew name."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Header block type. Set to 10 (hex) / 16 (decimal) for General Header Block 4."
+            }
+        ]
+    },
+    "0x11": {
+        "name": "generalHeader5",
+        "length": 32,
+        "fields": [
+            {
+                "name": "surveyAreaName",
+                "startByte": 1,
+                "endByte": 31,
+                "startNibble": 1,
+                "endNibble": 62,
+                "format": "ascii",
+                "description": "Survey area name."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Header block type. Set to 11 (hex) / 17 (decimal) for General Header Block 5."
+            }
+        ]
+    },
+    "0x12": {
+        "name": "generalHeader6",
+        "length": 32,
+        "fields": [
+            {
+                "name": "clientIdentification",
+                "startByte": 1,
+                "endByte": 31,
+                "startNibble": 1,
+                "endNibble": 62,
+                "format": "ascii",
+                "description": "Client name / identification."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Header block type. Set to 12 (hex) / 18 (decimal) for General Header Block 6."
+            }
+        ]
+    },
+    "0x30": {
+        "name": "scanTypeHeader",
+        "length": 96,
+        "fields": [
+            {
+                "name": "scanTypeNumber",
+                "startByte": 1,
+                "endByte": 1,
+                "startNibble": 1,
+                "endNibble": 2,
+                "format": "bcd",
+                "description": "Scan type number (1-99); see scanTypesPerRecord, byte 28, general header block 1 "
+            },
+            {
+                "name": "channelSetNumber",
+                "startByte": 2,
+                "endByte": 3,
+                "startNibble": 3,
+                "endNibble": 6,
+                "format": "ubin",
+                "description": "Channel set number (1-99).; See channelSetsPerScanType,  byte 29, general header block 1"
+            },
+            {
+                "name": "channelType",
+                "startByte": 4,
+                "endByte": 4,
+                "startNibble": 7,
+                "endNibble": 8,
+                "format": "hex",
+                "description": "Channel type identification (hex codes) - see documentation"
+            },
+            {
+                "name": "channelSetStartTime",
+                "startByte": 5,
+                "endByte": 8,
+                "startNibble": 9,
+                "endNibble": 16,
+                "format": "sbin",
+                "description": "Channel set start time."
+            },
+            {
+                "name": "channelSetEndTime",
+                "startByte": 9,
+                "endByte": 12,
+                "startNibble": 17,
+                "endNibble": 24,
+                "format": "sbin",
+                "description": "Channel set end time."
+            },
+            {
+                "name": "samplesPerChannel",
+                "startByte": 13,
+                "endByte": 16,
+                "startNibble": 25,
+                "endNibble": 32,
+                "format": "ubin",
+                "description": "Number of samples ine ach trace of this channel set."
+            },
+            {
+                "name": "descaleMultiplier",
+                "startByte": 17,
+                "endByte": 20,
+                "startNibble": 33,
+                "endNibble": 40,
+                "format": "ieee",
+                "description": "Multiplier is used to descale the data to obtain input voltage in millivolts"
+            },
+            {
+                "name": "numberOfChannelsThisSet",
+                "startByte": 21,
+                "endByte": 23,
+                "startNibble": 41,
+                "endNibble": 46,
+                "format": "ubin",
+                "description": "Number of channels in this channel set"
+            },
+            {
+                "name": "samplingInterval",
+                "startByte": 24,
+                "endByte": 26,
+                "startNibble": 47,
+                "endNibble": 52,
+                "format": "ubin",
+                "description": "Sampling interval in microseconds."
+            },
+            {
+                "name": "arrayFormatting",
+                "startByte": 27,
+                "endByte": 27,
+                "startNibble": 53,
+                "endNibble": 54,
+                "format": "hex",
+                "description": "Array formatting code. See documentation."
+            },
+            {
+                "name": "numberTraceHeaderExtensions",
+                "startByte": 28,
+                "endByte": 28,
+                "startNibble": 55,
+                "endNibble": 56,
+                "format": "ubin",
+                "description": "Number of trace header extensions. Must match byte 10 of Demux Trace Header."
+            },
+            {
+                "name": "extendedHeaderFlag",
+                "startByte": 29,
+                "endByte": 29,
+                "startNibble": 57,
+                "endNibble": 57,
+                "format": "ubin",
+                "description": "Set to 1 to indicate that extended header contains additional information on channel set."
+            },
+            {
+                "name": "channelGainControl",
+                "startByte": 29,
+                "endByte": 29,
+                "startNibble": 58,
+                "endNibble": 58,
+                "format": "ubin",
+                "description": "Channel gain control method - see documentation for code values."
+            },
+            {
+                "name": "verticalStack",
+                "startByte": 30,
+                "endByte": 30,
+                "startNibble": 59,
+                "endNibble": 60,
+                "format": "ubin",
+                "description": "Effective stack order. Set to one if no stack."
+            },
+            {
+                "name": "streamerNumber",
+                "startByte": 31,
+                "endByte": 31,
+                "startNibble": 61,
+                "endNibble": 62,
+                "format": "ubin",
+                "description": "Streamer cable number (required for streamer data only)"
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Header block type. Set to 30 (hex) / 48 (decimal) for Channel Set Descriptor Block 1."
+            },
+            {
+                "name": "aliasFilterFrequency",
+                "startByte": 33,
+                "endByte": 36,
+                "startNibble": 65,
+                "endNibble": 72,
+                "format": "ieee",
+                "description": "Alias filter frequency in Hz"
+            },
+            {
+                "name": "lowCutFilterFrequency",
+                "startByte": 37,
+                "endByte": 40,
+                "startNibble": 73,
+                "endNibble": 80,
+                "format": "ieee",
+                "description": "Low-cut filter setting in Hz"
+            },
+            {
+                "name": "aliasFilterSlope",
+                "startByte": 41,
+                "endByte": 44,
+                "startNibble": 81,
+                "endNibble": 88,
+                "format": "ieee",
+                "description": "Alias filter slope in dB per octave. Zero indicates filter is out."
+            },
+            {
+                "name": "lowCutFilterSlope",
+                "startByte": 45,
+                "endByte": 48,
+                "startNibble": 89,
+                "endNibble": 96,
+                "format": "ieee",
+                "description": "Low-cut filter slope. Zero indicates filter is out."
+            },
+            {
+                "name": "notchFrequency",
+                "startByte": 49,
+                "endByte": 52,
+                "startNibble": 97,
+                "endNibble": 104,
+                "format": "ieee",
+                "description": "Notch frequency setting. The out filter is written as 0.0 Hz."
+            },
+            {
+                "name": "secondNotchFrequency",
+                "startByte": 53,
+                "endByte": 56,
+                "startNibble": 105,
+                "endNibble": 112,
+                "format": "ieee",
+                "description": "Second notch frequency."
+            },
+            {
+                "name": "thirdNotchFrequency",
+                "startByte": 57,
+                "endByte": 60,
+                "startNibble": 113,
+                "endNibble": 120,
+                "format": "ieee",
+                "description": "Third notch frequency."
+            },
+            {
+                "name": "filterPhase",
+                "startByte": 61,
+                "endByte": 61,
+                "startNibble": 121,
+                "endNibble": 122,
+                "format": "ubin",
+                "description": "Filter phase - see documentation for code meanings."
+            },
+            {
+                "name": "physicalUnit",
+                "startByte": 62,
+                "endByte": 62,
+                "startNibble": 123,
+                "endNibble": 124,
+                "format": "ubin",
+                "description": "Physical unit measured by this sensor - see documentation for code meanings."
+            },
+            {
+                "name": "headerBlockType2",
+                "startByte": 64,
+                "endByte": 64,
+                "startNibble": 127,
+                "endNibble": 128,
+                "format": "ubin",
+                "description": "Header block type. Set to 31 (hex) / 49 (decimal) for Channel Set Descriptor Block 2."
+            },
+            {
+                "name": "filterDelay",
+                "startByte": 65,
+                "endByte": 68,
+                "startNibble": 129,
+                "endNibble": 136,
+                "format": "ubin",
+                "description": "Signal delay introduced by the filter in microseconds"
+            },
+            {
+                "name": "description",
+                "startByte": 69,
+                "endByte": 95,
+                "startNibble": 137,
+                "endNibble": 190,
+                "format": "ascii",
+                "description": "Channel set description (free-text)."
+            },
+            {
+                "name": "headerBlockType3",
+                "startByte": 96,
+                "endByte": 96,
+                "startNibble": 191,
+                "endNibble": 192,
+                "format": "ubin",
+                "description": "Header block type. Set to 32 (hex) / 50 (decimal) for Channel Set Descriptor Block 3."
+            }
+        ]
+    },
+    "0x41": {
+        "name": "sensorInfoHeader",
+        "length": 32,
+        "fields": [
+            {
+                "name": "instrumentTestTime",
+                "startByte": 1,
+                "endByte": 8,
+                "startNibble": 1,
+                "endNibble": 16,
+                "format": "timestamp",
+                "description": "Time of last equipment test. Set to 0 if not recorded."
+            },
+            {
+                "name": "sensorSensitivity",
+                "startByte": 9,
+                "endByte": 12,
+                "startNibble": 17,
+                "endNibble": 24,
+                "format": "ieee",
+                "description": "Sensor sensitivity. Divide by this number to achieve a physical unit (byte 31 of THEB1)"
+            },
+            {
+                "name": "instrumentTestResult",
+                "startByte": 13,
+                "endByte": 13,
+                "startNibble": 25,
+                "endNibble": 26,
+                "format": "ubin",
+                "description": "0 untested 1 passed 2 failed 3 uncertain"
+            },
+            {
+                "name": "serialNumber",
+                "startByte": 14,
+                "endByte": 31,
+                "startNibble": 27,
+                "endNibble": 62,
+                "format": "serial",
+                "description": "Serial number of sensor for this receiver. Left-justified"
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be 42 (hex) or 65 (decimal) for sensor info header."
+            }
+        ]
+    },
+    "0x42": {
+        "name": "timestampHeader",
+        "length": 32,
+        "fields": [
+            {
+                "name": "timeZero",
+                "startByte": 1,
+                "endByte": 8,
+                "startNibble": 1,
+                "endNibble": 16,
+                "format": "timestamp",
+                "description": "Time Zero for this data block (SEG-D timestamp). Time of first sample in the data described by this header. Time Zero + Sample Skew + First Timing Word."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be set to 42 (hex) or 66 (decimal) for Timestamp Header."
+            }
+        ]
+    },
+    "0x43": {
+        "name": "sensorCalibrationHeader",
+        "length": 32,
+        "fields": [
+            {
+                "name": "frequency1",
+                "startByte": 1,
+                "endByte": 4,
+                "startNibble": 1,
+                "endNibble": 8,
+                "format": "ieee",
+                "description": "Frequency of first calibration value. Set to 0 if not used."
+            },
+            {
+                "name": "amplitude1",
+                "startByte": 5,
+                "endByte": 8,
+                "startNibble": 9,
+                "endNibble": 16,
+                "format": "ieee",
+                "description": "Amplitude of first calibration value."
+            },
+            {
+                "name": "phase1",
+                "startByte": 9,
+                "endByte": 12,
+                "startNibble": 17,
+                "endNibble": 24,
+                "format": "ieee",
+                "description": "Phase of first calibration value."
+            },
+            {
+                "name": "frequency2",
+                "startByte": 13,
+                "endByte": 16,
+                "startNibble": 25,
+                "endNibble": 32,
+                "format": "ieee",
+                "description": "Frequency of second calibration value. Set to 0 if not used."
+            },
+            {
+                "name": "amplitude2",
+                "startByte": 17,
+                "endByte": 20,
+                "startNibble": 33,
+                "endNibble": 40,
+                "format": "ieee",
+                "description": "Amplitude of second calibration value."
+            },
+            {
+                "name": "phase2",
+                "startByte": 21,
+                "endByte": 24,
+                "startNibble": 41,
+                "endNibble": 48,
+                "format": "ieee",
+                "description": "Phase of second calibration value."
+            },
+            {
+                "name": "calibrationApplied",
+                "startByte": 25,
+                "endByte": 25,
+                "startNibble": 49,
+                "endNibble": 50,
+                "format": "ubin",
+                "description": "Set to 1 if calibration has already been applied or 0 if trace is not corrected."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be 42 (hex) or 65 (decimal) for sensor info header."
+            }
+        ]
+    },
+    "0x44": {
+        "name": "timeDriftHeader",
+        "length": 32,
+        "fields": [
+            {
+                "name": "timeOfDeployment",
+                "startByte": 1,
+                "endByte": 8,
+                "startNibble": 1,
+                "endNibble": 16,
+                "format": "timestamp",
+                "description": "Time of sensor unit deployment."
+            },
+            {
+                "name": "timeOfRetrieval",
+                "startByte": 9,
+                "endByte": 16,
+                "startNibble": 17,
+                "endNibble": 32,
+                "format": "timestamp",
+                "description": "Time of sensor unit retrieval."
+            },
+            {
+                "name": "timeOffsetDeployment",
+                "startByte": 17,
+                "endByte": 20,
+                "startNibble": 33,
+                "endNibble": 40,
+                "format": "sbin",
+                "description": "Time offset value at deployment in number of microseconds"
+            },
+            {
+                "name": "timeOffsetRetrieval",
+                "startByte": 21,
+                "endByte": 24,
+                "startNibble": 41,
+                "endNibble": 48,
+                "format": "sbin",
+                "description": "Time offset value at retrieval in number of microseconds"
+            },
+            {
+                "name": "timedriftCorrected",
+                "startByte": 25,
+                "endByte": 25,
+                "startNibble": 49,
+                "endNibble": 50,
+                "format": "ubin",
+                "description": "Set to 1 if time drift correction applied or 0 if not."
+            },
+            {
+                "name": "correctionMethod",
+                "startByte": 26,
+                "endByte": 26,
+                "startNibble": 51,
+                "endNibble": 52,
+                "format": "ubin",
+                "description": "Method for time drift correction. 0 is uncorrected. 1 is linear correction. FF other correction method."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be set to 43 (hex) or 67 (decimal) for Time Drift Header."
+            }
+        ]
+    },
+    "0x50": {
+        "name": "positionBlocks",
+        "length": 96,
+        "fields": [
+            {
+                "name": "timeOfPosition",
+                "startByte": 1,
+                "endByte": 8,
+                "startNibble": 1,
+                "endNibble": 16,
+                "format": "timestamp",
+                "description": "Time of position."
+            },
+            {
+                "name": "timeOfMeasurement",
+                "startByte": 9,
+                "endByte": 16,
+                "startNibble": 17,
+                "endNibble": 32,
+                "format": "timestamp",
+                "description": "Time of measurement / calculation."
+            },
+            {
+                "name": "verticalError",
+                "startByte": 17,
+                "endByte": 20,
+                "startNibble": 31,
+                "endNibble": 40,
+                "format": "ieee",
+                "description": "95 percent precision estimate in same units as vertical coordinate"
+            },
+            {
+                "name": "horizontalErrorSemiMajor",
+                "startByte": 21,
+                "endByte": 24,
+                "startNibble": 41,
+                "endNibble": 48,
+                "format": "ieee",
+                "description": "95 percent error ellipse semi-major axis in same units as horizontal coordinate"
+            },
+            {
+                "name": "horizontalErrorSemiMinor",
+                "startByte": 25,
+                "endByte": 28,
+                "startNibble": 49,
+                "endNibble": 56,
+                "format": "ieee",
+                "description": "95 percent error ellipse semi-minor axis in same units as horizontal coordinate"
+            },
+            {
+                "name": "horizontalError",
+                "startByte": 29,
+                "endByte": 30,
+                "startNibble": 57,
+                "endNibble": 60,
+                "format": "ubin",
+                "description": "Horizontal error quality estimate - bearing of error ellipse semi-major axis oriented to grid north in 1/100s of a degree"
+            },
+            {
+                "name": "positionType",
+                "startByte": 31,
+                "endByte": 31,
+                "startNibble": 61,
+                "endNibble": 62,
+                "format": "ubin",
+                "description": "Type of position - see documentation for code meanings."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be 50 (hex) or 80 (decimal) for Position Block 1."
+            },
+            {
+                "name": "position1FirstCoordinate",
+                "startByte": 33,
+                "endByte": 40,
+                "startNibble": 65,
+                "endNibble": 80,
+                "format": "double",
+                "description": "First coordinate for coordinate tuple 1."
+            },
+            {
+                "name": "position1SecondCoordinate",
+                "startByte": 41,
+                "endByte": 48,
+                "startNibble": 81,
+                "endNibble": 96,
+                "format": "double",
+                "description": "Second coordinate for coordinate tuple 1."
+            },
+            {
+                "name": "position1ThirdCoordinate",
+                "startByte": 49,
+                "endByte": 56,
+                "startNibble": 97,
+                "endNibble": 112,
+                "format": "double",
+                "description": "Third coordinate for coordinate tuple 1."
+            },
+            {
+                "name": "position1LocationDataStanza",
+                "startByte": 57,
+                "endByte": 58,
+                "startNibble": 113,
+                "endNibble": 116,
+                "format": "ubin",
+                "description": "Location Data Stanza ID of the CRS for coordinate tuple 1."
+            },
+            {
+                "name": "position1ValidFlag",
+                "startByte": 59,
+                "endByte": 59,
+                "startNibble": 117,
+                "endNibble": 118,
+                "format": "ubin",
+                "description": "Position 1 valid flag - set to 1 if position coordinates are valid or 0 if not."
+            },
+            {
+                "name": "position1Quality",
+                "startByte": 60,
+                "endByte": 60,
+                "startNibble": 119,
+                "endNibble": 120,
+                "format": "ubin",
+                "description": "Position 1 quality flag - see documentation for code meanings. 1 is good. 3 is bad."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 64,
+                "endByte": 64,
+                "startNibble": 127,
+                "endNibble": 128,
+                "format": "ubin",
+                "description": "Must be 51 (hex) or 81 (decimal) for Position Block 2."
+            },
+            {
+                "name": "position2FirstCoordinate",
+                "startByte": 65,
+                "endByte": 72,
+                "startNibble": 129,
+                "endNibble": 144,
+                "format": "double",
+                "description": "First coordinate for coordinate tuple 2."
+            },
+            {
+                "name": "position2SecondCoordinate",
+                "startByte": 73,
+                "endByte": 80,
+                "startNibble": 145,
+                "endNibble": 160,
+                "format": "double",
+                "description": "Second coordinate for coordinate tuple 2."
+            },
+            {
+                "name": "position2ThirdCoordinate",
+                "startByte": 81,
+                "endByte": 88,
+                "startNibble": 161,
+                "endNibble": 176,
+                "format": "double",
+                "description": "Third coordinate for coordinate tuple 2."
+            },
+            {
+                "name": "position2LocationDataStanza",
+                "startByte": 89,
+                "endByte": 90,
+                "startNibble": 177,
+                "endNibble": 180,
+                "format": "ubin",
+                "description": "Location Data Stanza ID of the CRS for coordinate tuple 2."
+            },
+            {
+                "name": "position2ValidFlag",
+                "startByte": 91,
+                "endByte": 91,
+                "startNibble": 181,
+                "endNibble": 182,
+                "format": "ubin",
+                "description": "Position 2 valid flag - set to 1 if position coordinates are valid or 0 if not."
+            },
+            {
+                "name": "position2Quality",
+                "startByte": 92,
+                "endByte": 92,
+                "startNibble": 183,
+                "endNibble": 184,
+                "format": "ubin",
+                "description": "Position 2 quality flag - see documentation for code meanings. 1 is good. 3 is bad."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 96,
+                "endByte": 96,
+                "startNibble": 191,
+                "endNibble": 192,
+                "format": "ubin",
+                "description": "Must be 52 (hex) or 82 (decimal) for Position Block 3."
+            }
+        ]
+    },
+    "0x55": {
+        "name": "coordRefSystem",
+        "length": 32,
+        "fields": [
+            {
+                "name": "crsID",
+                "startByte": 1,
+                "endByte": 31,
+                "startNibble": 1,
+                "endNibble": 62,
+                "format": "ascii",
+                "description": "Coordinate reference system (CRS) - see appendix D of documentation."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Header block type. Set to 55 (hex) / 85 (decimal) for Coordinate Reference System Identification."
+            }
+        ]
+    },
+    "0x56": {
+        "name": "relativePositionBlock",
+        "length": 32,
+        "fields": [
+            {
+                "name": "offsetEasting",
+                "startByte": 1,
+                "endByte": 4,
+                "startNibble": 1,
+                "endNibble": 8,
+                "format": "ieee",
+                "description": "Offset in projected (grid) coordinates in easting direction in units given in projected CRS definition."
+            },
+            {
+                "name": "offsetNorthing",
+                "startByte": 5,
+                "endByte": 8,
+                "startNibble": 9,
+                "endNibble": 16,
+                "format": "ieee",
+                "description": "Offset in projected (grid) coordinates in northing direction in units given in projected CRS definition."
+            },
+            {
+                "name": "offsetVertical",
+                "startByte": 9,
+                "endByte": 12,
+                "startNibble": 17,
+                "endNibble": 24,
+                "format": "ieee",
+                "description": "Offset in vertical direction in units given in vertical CRS definition"
+            },
+            {
+                "name": "description",
+                "startByte": 13,
+                "endByte": 31,
+                "startNibble": 25,
+                "endNibble": 62,
+                "format": "ascii",
+                "description": "Manufacturer defined textual description of the equipment"
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be 56 (hex) or 86 (decimal) for Relative Position Block."
+            }
+        ]
+    },
+    "0x60": {
+        "name": "orientationHeader",
+        "length": 32,
+        "fields": [
+            {
+                "name": "rotationXAxis",
+                "startByte": 1,
+                "endByte": 4,
+                "startNibble": 1,
+                "endNibble": 8,
+                "format": "ieee",
+                "description": "Rotation angle around X axis in radians"
+            },
+            {
+                "name": "rotationYAxis",
+                "startByte": 5,
+                "endByte": 8,
+                "startNibble": 9,
+                "endNibble": 16,
+                "format": "ieee",
+                "description": "Rotation angle around Y axis in radians"
+            },
+            {
+                "name": "rotationZAxis",
+                "startByte": 9,
+                "endByte": 12,
+                "startNibble": 17,
+                "endNibble": 24,
+                "format": "ieee",
+                "description": "Rotation angle around Z axis in radians"
+            },
+            {
+                "name": "referenceOrientation",
+                "startByte": 13,
+                "endByte": 16,
+                "startNibble": 25,
+                "endNibble": 32,
+                "format": "ieee",
+                "description": "Rotation angle for the system relative to true north"
+            },
+            {
+                "name": "timeStamp",
+                "startByte": 17,
+                "endByte": 24,
+                "startNibble": 33,
+                "endNibble": 48,
+                "format": "timestamp",
+                "description": "Timestamp for which the rotation applies."
+            },
+            {
+                "name": "orientationType",
+                "startByte": 25,
+                "endByte": 25,
+                "startNibble": 49,
+                "endNibble": 50,
+                "format": "ubin",
+                "description": "Rotation coordinate system. See header info in documentation."
+            },
+            {
+                "name": "referenceOrientValid",
+                "startByte": 26,
+                "endByte": 26,
+                "startNibble": 51,
+                "endNibble": 52,
+                "format": "ubin",
+                "description": "Set to 1 if referenceOrientation valid otherwise set as 0."
+            },
+            {
+                "name": "rotationApplied",
+                "startByte": 27,
+                "endByte": 27,
+                "startNibble": 53,
+                "endNibble": 54,
+                "format": "ubin",
+                "description": "Set to 1 if rotation around XYZ axes (first three fields) already applied otherwise set as 0."
+            },
+            {
+                "name": "rotationNorthApplied",
+                "startByte": 28,
+                "endByte": 28,
+                "startNibble": 55,
+                "endNibble": 56,
+                "format": "ubin",
+                "description": "Set to 1 if values in traces already rotated to true north. Otherwise 0."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be 60 (hex) or 96 (decimal) for sensor info header."
+            }
+        ]
+    },
+    "0x61": {
+        "name": "measurementBlock",
+        "length": 32,
+        "fields": [
+            {
+                "name": "timeStamp",
+                "startByte": 1,
+                "endByte": 8,
+                "startNibble": 1,
+                "endNibble": 16,
+                "format": "timestamp",
+                "description": "Timestamp for measurement."
+            },
+            {
+                "name": "measurementValue",
+                "startByte": 9,
+                "endByte": 12,
+                "startNibble": 17,
+                "endNibble": 24,
+                "format": "ieee",
+                "description": "Value of the measurement. "
+            },
+            {
+                "name": "maximumValue",
+                "startByte": 13,
+                "endByte": 16,
+                "startNibble": 25,
+                "endNibble": 32,
+                "format": "ieee",
+                "description": "Max possible value of measurement"
+            },
+            {
+                "name": "minimumValue",
+                "startByte": 17,
+                "endByte": 20,
+                "startNibble": 33,
+                "endNibble": 40,
+                "format": "ieee",
+                "description": "Min possible value of measurement"
+            },
+            {
+                "name": "quantityClass",
+                "startByte": 21,
+                "endByte": 22,
+                "startNibble": 41,
+                "endNibble": 44,
+                "format": "ubin",
+                "description": "Code representing underlying kind of measurement represented by GM1. See documentation."
+            },
+            {
+                "name": "unitOfMeasure",
+                "startByte": 23,
+                "endByte": 24,
+                "startNibble": 45,
+                "endNibble": 48,
+                "format": "ubin",
+                "description": "Code of Unit of Measurement. See documentation."
+            },
+            {
+                "name": "measurementDescription",
+                "startByte": 25,
+                "endByte": 26,
+                "startNibble": 49,
+                "endNibble": 52,
+                "format": "ubin",
+                "description": "Measurement description code. See documentation."
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be 61 (hex) or 97 (decimal) for Measurement Block."
+            }
+        ]
+    },
+    "0xD6": {
+        "name": "userD6",
+        "length": 32,
+        "fields": [
+            {
+                "name": "latitude",
+                "startByte": 1,
+                "endByte": 8,
+                "startNibble": 1,
+                "endNibble": 16,
+                "format": "double",
+                "description": "Sensor latitude"
+            },
+            {
+                "name": "longitude",
+                "startByte": 9,
+                "endByte": 16,
+                "startNibble": 17,
+                "endNibble": 32,
+                "format": "double",
+                "description": "Sensor longitude"
+            },
+            {
+                "name": "elevation",
+                "startByte": 17,
+                "endByte": 20,
+                "startNibble": 33,
+                "endNibble": 40,
+                "format": "ieee",
+                "description": "Sensor elevation"
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Must be d6 (hex) or 124 (decimal) for this block."
+            }
+        ]
+    }
+}
