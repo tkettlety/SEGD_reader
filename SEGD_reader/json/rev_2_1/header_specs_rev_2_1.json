@@ -1,0 +1,821 @@
+{
+    "_generalHeader1": {
+        "name": "generalHeader1",
+        "length": 32,
+        "fields": [
+            {
+                "name": "fileNumber",
+                "startByte": 1,
+                "endByte": 2,
+                "startNibble": 1,
+                "endNibble": 4,
+                "format": "bcd",
+                "description": "File number (0-9999)"
+            },
+            {
+                "name": "formatCode",
+                "startByte": 3,
+                "endByte": 4,
+                "startNibble": 5,
+                "endNibble": 8,
+                "format": "bcd",
+                "description": "Format code"
+            },
+            {
+                "name": "generalConstants",
+                "startByte": 5,
+                "endByte": 10,
+                "startNibble": 9,
+                "endNibble": 20,
+                "format": "bcd",
+                "description": "General constants"
+            },
+            {
+                "name": "year",
+                "startByte": 11,
+                "endByte": 11,
+                "startNibble": 21,
+                "endNibble": 22,
+                "format": "bcd",
+                "description": "Year (0-99)"
+            },
+            {
+                "name": "generalHeaderBlocks",
+                "startByte": 12,
+                "endByte": 12,
+                "startNibble": 23,
+                "endNibble": 23,
+                "format": "ubin",
+                "description": "Number of additional blocks in General Header"
+            },
+            {
+                "name": "day",
+                "startByte": 12,
+                "endByte": 13,
+                "startNibble": 24,
+                "endNibble": 26,
+                "format": "bcd",
+                "description": "Julian day (1-366)"
+            },
+            {
+                "name": "hour",
+                "startByte": 14,
+                "endByte": 14,
+                "startNibble": 27,
+                "endNibble": 28,
+                "format": "bcd",
+                "description": "Hour of day  (0-23)"
+            },
+            {
+                "name": "minute",
+                "startByte": 15,
+                "endByte": 15,
+                "startNibble": 29,
+                "endNibble": 30,
+                "format": "bcd",
+                "description": "Minute of hour (0-59)"
+            },
+            {
+                "name": "second",
+                "startByte": 16,
+                "endByte": 16,
+                "startNibble": 31,
+                "endNibble": 32,
+                "format": "bcd",
+                "description": "Second of minute (0-59)"
+            },
+            {
+                "name": "manufacturersCode",
+                "startByte": 17,
+                "endByte": 17,
+                "startNibble": 33,
+                "endNibble": 34,
+                "format": "bcd",
+                "description": "Manufacturer's code"
+            },
+            {
+                "name": "manunfacturersSerialNumber",
+                "startByte": 18,
+                "endByte": 19,
+                "startNibble": 35,
+                "endNibble": 38,
+                "format": "bcd",
+                "description": "Manufacturer's serial number"
+            },
+            {
+                "name": "unusedFirst",
+                "startByte": 20,
+                "endByte": 22,
+                "startNibble": 39,
+                "endNibble": 44,
+                "format": "bcd",
+                "description": "Unused in revision 3.0"
+            },
+            {
+                "name": "baseScanInterval",
+                "startByte": 23,
+                "endByte": 23,
+                "startNibble": 45,
+                "endNibble": 46,
+                "format": "ubin",
+                "description": "Base scan interval"
+            },
+            {
+                "name": "polarity",
+                "startByte": 24,
+                "endByte": 24,
+                "startNibble": 47,
+                "endNibble": 47,
+                "format": "bcd",
+                "description": "Polarity"
+            },
+            {
+                "name": "unusedSecond",
+                "startByte": 24,
+                "endByte": 25,
+                "startNibble": 48,
+                "endNibble": 50,
+                "format": "bcd",
+                "description": "Unused in revision 3.0"
+            },
+            {
+                "name": "recordType",
+                "startByte": 26,
+                "endByte": 26,
+                "startNibble": 51,
+                "endNibble": 51,
+                "format": "bcd",
+                "description": "Record type"
+            },
+            {
+                "name": "recordLength",
+                "startByte": 26,
+                "endByte": 27,
+                "startNibble": 52,
+                "endNibble": 54,
+                "format": "bcd",
+                "description": "Record length from time zero (in increments of 0.5 times 1.024 s). "
+            },
+            {
+                "name": "scanTypesPerRecord",
+                "startByte": 28,
+                "endByte": 28,
+                "startNibble": 55,
+                "endNibble": 56,
+                "format": "bcd",
+                "description": "Scan types per record (1-99)"
+            },
+            {
+                "name": "channelSetsPerScanType",
+                "startByte": 29,
+                "endByte": 29,
+                "startNibble": 57,
+                "endNibble": 58,
+                "format": "bcd",
+                "description": "Number of channel sets per scan type (1-99)"
+            },
+            {
+                "name": "skewBlocks",
+                "startByte": 30,
+                "endByte": 30,
+                "startNibble": 59,
+                "endNibble": 60,
+                "format": "bcd",
+                "description": "Skew fields length (0-99). Number of 32 byte extensions to scan type header"
+            },
+            {
+                "name": "extendedHeaderBlocks",
+                "startByte": 31,
+                "endByte": 31,
+                "startNibble": 61,
+                "endNibble": 62,
+                "format": "bcd",
+                "description": "Extended header length (0-99). Number of 32 byte extensions to general header"
+            },
+            {
+                "name": "externalHeaderBlocks",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "bcd",
+                "description": "External header length (0-99). Number of 32 byte extensions to general header"
+            }
+        ]
+    },
+    "_generalHeader2": {
+        "name": "generalHeader2",
+        "length": 32,
+        "fields": [
+            {
+                "name": "expandedFileNumber",
+                "startByte": 1,
+                "endByte": 3,
+                "startNibble": 1,
+                "endNibble": 6,
+                "format": "ubin",
+                "description": "Extended file number. (Bytes 1 and 2 of GHB1 must be set to FFFF for ffids greater than 9999)"
+            },
+            {
+                "name": "extendedChannelSetsPerScanType",
+                "startByte": 4,
+                "endByte": 5,
+                "startNibble": 7,
+                "endNibble": 10,
+                "format": "ubin",
+                "description": "Extended channel sets/scan types. (Byte 29 of GHB1 must be set to FF for numbers greater than 99)"
+            },
+            {
+                "name": "extendedHeaderBlocks",
+                "startByte": 6,
+                "endByte": 7,
+                "startNibble": 11,
+                "endNibble": 14,
+                "format": "ubin",
+                "description": "Extended header blocks"
+            },
+            {
+                "name": "externalHeaderBlocks",
+                "startByte": 8,
+                "endByte": 9,
+                "startNibble": 15,
+                "endNibble": 18,
+                "format": "ubin",
+                "description": "External header blocks"
+            },
+            {
+                "name": "majorSEGDrevisionNumber",
+                "startByte": 11,
+                "endByte": 11,
+                "startNibble": 21,
+                "endNibble": 22,
+                "format": "ubin",
+                "description": "Major SEG-D revision number"
+            },
+            {
+                "name": "minorSEGDrevisionNumber",
+                "startByte": 12,
+                "endByte": 12,
+                "startNibble": 23,
+                "endNibble": 24,
+                "format": "ubin",
+                "description": "Minor SEG-D revision number"
+            },
+            {
+                "name": "generalTrailerBlocks",
+                "startByte": 13,
+                "endByte": 14,
+                "startNibble": 25,
+                "endNibble": 28,
+                "format": "ubin",
+                "description": "Number of 32-byte General Trailer blocks"
+            },
+            {
+                "name": "extendedRecordLength",
+                "startByte": 15,
+                "endByte": 17,
+                "startNibble": 29,
+                "endNibble": 34,
+                "format": "ubin",
+                "description": "Record length in microseconds."
+            },
+            {
+                "name": "sequenceNumber",
+                "startByte": 21,
+                "endByte": 22,
+                "startNibble": 41,
+                "endNibble": 44,
+                "format": "ubin",
+                "description": "Sequence Number"
+            }
+        ]
+    },
+    "_generalHeaderN": {
+        "name": "generalHeaderN",
+        "length": 32,
+        "fields": [
+            {
+                "name": "expandedFileNumber",
+                "startByte": 1,
+                "endByte": 3,
+                "startNibble": 1,
+                "endNibble": 6,
+                "format": "ubin",
+                "description": "Expanded file number. (Bytes 1 and 2 of GHB1 must be set to FFFF for ffids greater than 9999)"
+            },
+            {
+                "name": "sourceLineNumber",
+                "startByte": 4,
+                "endByte": 6,
+                "startNibble": 7,
+                "endNibble": 12,
+                "format": "sbin",
+                "description": "Source line number (GHB1 constains the source location for one source set)"
+            },
+            {
+                "name": "sourceLineNumberFraction",
+                "startByte": 7,
+                "endByte": 8,
+                "startNibble": 13,
+                "endNibble": 16,
+                "format": "fraction",
+                "description": "Source line number, fraction"
+            },
+            {
+                "name": "sourcePointNumberInteger",
+                "startByte": 9,
+                "endByte": 11,
+                "startNibble": 17,
+                "endNibble": 22,
+                "format": "sbin",
+                "description": "Source point number, integer"
+            },
+            {
+                "name": "sourcePointNumberFraction",
+                "startByte": 12,
+                "endByte": 13,
+                "startNibble": 23,
+                "endNibble": 26,
+                "format": "fraction",
+                "description": "Source point number, fraction"
+            },
+            {
+                "name": "sourcePointIndex",
+                "startByte": 14,
+                "endByte": 14,
+                "startNibble": 27,
+                "endNibble": 28,
+                "format": "ubin",
+                "description": "Source point index"
+            },
+            {
+                "name": "phaseControl",
+                "startByte": 15,
+                "endByte": 15,
+                "startNibble": 29,
+                "endNibble": 30,
+                "format": "ubin",
+                "description": "Phase control"
+            },
+            {
+                "name": "typeVibrator",
+                "startByte": 16,
+                "endByte": 16,
+                "startNibble": 31,
+                "endNibble": 32,
+                "format": "ubin",
+                "description": "Type vibrator"
+            },
+            {
+                "name": "phaseAngle",
+                "startByte": 17,
+                "endByte": 18,
+                "startNibble": 33,
+                "endNibble": 36,
+                "format": "sbin",
+                "description": "Phase angle of the intercept of the pilot signal with respect to the phase feedback signal in degrees (set to zero when phase control is zero)"
+            },
+            {
+                "name": "generalHeaderBlockNumber",
+                "startByte": 19,
+                "endByte": 19,
+                "startNibble": 37,
+                "endNibble": 38,
+                "format": "ubin",
+                "description": "General header block number (Set to N for this block)"
+            },
+            {
+                "name": "sourceSetNumber",
+                "startByte": 20,
+                "endByte": 20,
+                "startNibble": 39,
+                "endNibble": 40,
+                "format": "ubin",
+                "description": "Source set number. Used to allow multiple sets of sources. Zero is not valid."
+            }
+        ]
+    },
+    "0x30": {
+        "name": "scanTypeHeader",
+        "length": 32,
+        "fields": [
+            {
+                "name": "scanTypeNumber",
+                "startByte": 1,
+                "endByte": 1,
+                "startNibble": 1,
+                "endNibble": 2,
+                "format": "bcd",
+                "description": "Scan type number (1-99); see scanTypesPerRecord, byte 28, general header block 1 "
+            },
+            {
+                "name": "channelSetNumber",
+                "startByte": 2,
+                "endByte": 2,
+                "startNibble": 3,
+                "endNibble": 4,
+                "format": "bcd",
+                "description": "Channel set number (1-99).; See channelSetsPerScanType,  byte 29, general header block 1"
+            },
+            {
+                "name": "channelSetStartTime",
+                "startByte": 3,
+                "endByte": 4,
+                "startNibble": 5,
+                "endNibble": 8,
+                "format": "ubin",
+                "description": "Channel set start time. (0-131,070 ms in 2 ms increments)"
+            },
+            {
+                "name": "channelSetEndTime",
+                "startByte": 5,
+                "endByte": 6,
+                "startNibble": 9,
+                "endNibble": 12,
+                "format": "ubin",
+                "description": "Channel set end time. (0-131,070 ms in 2 ms increments)"
+            },
+            {
+                "name": "descaleMultiplierExtendedResolution",
+                "startByte": 7,
+                "endByte": 7,
+                "startNibble": 13,
+                "endNibble": 14,
+                "format": "ubin",
+                "description": "Optional byte which extends descale muliplier resolution"
+            },
+            {
+                "name": "descaleMultiplier",
+                "startByte": 8,
+                "endByte": 8,
+                "startNibble": 15,
+                "endNibble": 16,
+                "format": "sbin",
+                "description": "Descale multiplier (2^-31.75-2^31.75)"
+            },
+            {
+                "name": "numberOfChannelsThisSet",
+                "startByte": 9,
+                "endByte": 10,
+                "startNibble": 17,
+                "endNibble": 20,
+                "format": "bcd",
+                "description": "Number of channels in this channel set (0-9999)"
+            },
+            {
+                "name": "channelType",
+                "startByte": 11,
+                "endByte": 11,
+                "startNibble": 21,
+                "endNibble": 21,
+                "format": "bcd",
+                "description": "Channel type identification"
+            },
+            {
+                "name": "samplesPerChannel",
+                "startByte": 12,
+                "endByte": 12,
+                "startNibble": 23,
+                "endNibble": 23,
+                "format": "bcd",
+                "description": "Samples per channel (1-512 == 2^0-2^9); See baseScanInterval, byte 23, general header block 1"
+            },
+            {
+                "name": "channelGain",
+                "startByte": 12,
+                "endByte": 12,
+                "startNibble": 24,
+                "endNibble": 24,
+                "format": "bcd",
+                "description": "Channel gain control method"
+            },
+            {
+                "name": "aliasFilterFrequency",
+                "startByte": 13,
+                "endByte": 14,
+                "startNibble": 25,
+                "endNibble": 28,
+                "format": "bcd",
+                "description": "Alias filter frequency (0-9999 Hz)."
+            },
+            {
+                "name": "aliasFilterSlope",
+                "startByte": 15,
+                "endByte": 16,
+                "startNibble": 30,
+                "endNibble": 32,
+                "format": "bcd",
+                "description": "Alias filter slope in dB per octave (0-999 dB in 1-dB steps)"
+            },
+            {
+                "name": "lowCutFilter",
+                "startByte": 17,
+                "endByte": 18,
+                "startNibble": 33,
+                "endNibble": 36,
+                "format": "bcd",
+                "description": "Low-cut filter setting (0-9999 Hz)"
+            },
+            {
+                "name": "lowCutFilterSlope",
+                "startByte": 19,
+                "endByte": 20,
+                "startNibble": 38,
+                "endNibble": 40,
+                "format": "bcd",
+                "description": "Low-cut filter slope in dB per octave (0-999 dB in 1-dB steps)"
+            },
+            {
+                "name": "firstNotchFilter",
+                "startByte": 21,
+                "endByte": 22,
+                "startNibble": 41,
+                "endNibble": 44,
+                "format": "bcd",
+                "description": "Notch1 frequency setting (0-999.9 Hz)"
+            },
+            {
+                "name": "secondNotchFilter",
+                "startByte": 23,
+                "endByte": 24,
+                "startNibble": 45,
+                "endNibble": 48,
+                "format": "bcd",
+                "description": "Notch2 frequency setting (0-999.9 Hz)"
+            },
+            {
+                "name": "thirdNotchFilter",
+                "startByte": 25,
+                "endByte": 26,
+                "startNibble": 49,
+                "endNibble": 52,
+                "format": "bcd",
+                "description": "Notch3 frequency setting (0-999.9 Hz)"
+            },
+            {
+                "name": "extendedChannelSetNumber",
+                "startByte": 27,
+                "endByte": 28,
+                "startNibble": 53,
+                "endNibble": 56,
+                "format": "ubin",
+                "description": "Extended channel set number"
+            },
+            {
+                "name": "extendedHeaderFlag",
+                "startByte": 29,
+                "endByte": 29,
+                "startNibble": 57,
+                "endNibble": 57,
+                "format": "ubin",
+                "description": "Extended header flag (Set to 1 to indicate that the extended header contains additional information on this channel set)"
+            },
+            {
+                "name": "traceHeaderExtension",
+                "startByte": 29,
+                "endByte": 29,
+                "startNibble": 58,
+                "endNibble": 58,
+                "format": "ubin",
+                "description": "Trace header extension; see traceHeaderExtension, byte 10, Demux Trace Header"
+            },
+            {
+                "name": "verticalStack",
+                "startByte": 30,
+                "endByte": 30,
+                "startNibble": 59,
+                "endNibble": 60,
+                "format": "ubin",
+                "description": "Vertical stack (0 = trace data intentionally set to zero, one if no stack, N = effective stack order)"
+            },
+            {
+                "name": "streamerNumber",
+                "startByte": 31,
+                "endByte": 31,
+                "startNibble": 61,
+                "endNibble": 62,
+                "format": "ubin",
+                "description": "Streamer cable number (required for streamer data only)"
+            },
+            {
+                "name": "arrayForming",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Array forming"
+            }
+        ]
+    },
+    "_demuxTraceHeader": {
+        "name": "demuxTraceHeader",
+        "length": 20,
+        "fields": [
+            {
+                "name": "fileNumber",
+                "startByte": 1,
+                "endByte": 2,
+                "startNibble": 1,
+                "endNibble": 4,
+                "format": "bcd",
+                "description": "File number (must be set to FFFF when the extended file number is used (bytes 18-20)"
+            },
+            {
+                "name": "scanTypeNumber",
+                "startByte": 3,
+                "endByte": 3,
+                "startNibble": 5,
+                "endNibble": 6,
+                "format": "bcd",
+                "description": "Scan type number (must be set to FF when the extended channel set number is used (bytes 16-17)"
+            },
+            {
+                "name": "channelSetNumber",
+                "startByte": 4,
+                "endByte": 4,
+                "startNibble": 7,
+                "endNibble": 8,
+                "format": "bcd",
+                "description": "Channel set number"
+            },
+            {
+                "name": "traceNumber",
+                "startByte": 5,
+                "endByte": 6,
+                "startNibble": 9,
+                "endNibble": 12,
+                "format": "bcd",
+                "description": "Trace number"
+            },
+            {
+                "name": "firstTimingWordInteger",
+                "startByte": 7,
+                "endByte": 8,
+                "startNibble": 13,
+                "endNibble": 16,
+                "format": "ubin",
+                "description": "First timing word integer; Timing word for first sample if multiplexed. Multiply by sample skew time (byte 11) and baseScanInterval (general header 1) for actual time"
+            },
+            {
+                "name": "firstTimingWordFraction",
+                "startByte": 9,
+                "endByte": 9,
+                "startNibble": 17,
+                "endNibble": 18,
+                "format": "fraction",
+                "description": "First timing word fraction"
+            },
+            {
+                "name": "traceHeaderExtension",
+                "startByte": 10,
+                "endByte": 10,
+                "startNibble": 19,
+                "endNibble": 20,
+                "format": "ubin",
+                "description": "Number of 32-byte trace header extension blocks (maximum 15)"
+            },
+            {
+                "name": "sampleSkew",
+                "startByte": 11,
+                "endByte": 11,
+                "startNibble": 21,
+                "endNibble": 22,
+                "format": "fraction",
+                "description": "Sample skew (see First timing word, byte 7)"
+            },
+            {
+                "name": "traceEdit",
+                "startByte": 12,
+                "endByte": 12,
+                "startNibble": 23,
+                "endNibble": 24,
+                "format": "ubin",
+                "description": "Trace edit"
+            },
+            {
+                "name": "timeBreakWindowInteger",
+                "startByte": 13,
+                "endByte": 14,
+                "startNibble": 25,
+                "endNibble": 28,
+                "format": "ubin",
+                "description": "Time break window integer"
+            },
+            {
+                "name": "timeBreakWindowFraction",
+                "startByte": 15,
+                "endByte": 16,
+                "startNibble": 29,
+                "endNibble": 30,
+                "format": "fraction",
+                "description": "Time break window fraction"
+            },
+            {
+                "name": "extendedChannelSetNumber",
+                "startByte": 16,
+                "endByte": 17,
+                "startNibble": 31,
+                "endNibble": 34,
+                "format": "ubin",
+                "description": "Extended channel set number"
+            },
+            {
+                "name": "extendedFileNumber",
+                "startByte": 18,
+                "endByte": 20,
+                "startNibble": 35,
+                "endNibble": 40,
+                "format": "ubin",
+                "description": "Extended file number"
+            }
+        ]
+    },
+    "_traceHeaderExtension": {
+        "name": "traceHeaderExtension",
+        "length": 32,
+        "fields": [
+            {
+                "name": "receiverLineNumber",
+                "startByte": 1,
+                "endByte": 3,
+                "startNibble": 1,
+                "endNibble": 6,
+                "format": "sbin",
+                "description": "Receiver line number"
+            },
+            {
+                "name": "receiverPointNumber",
+                "startByte": 4,
+                "endByte": 6,
+                "startNibble": 7,
+                "endNibble": 12,
+                "format": "sbin",
+                "description": "Receiver point number"
+            },
+            {
+                "name": "receiverPointIndex",
+                "startByte": 7,
+                "endByte": 7,
+                "startNibble": 13,
+                "endNibble": 14,
+                "format": "sbin",
+                "description": "Receiver point index"
+            },
+            {
+                "name": "numberOfSamplesPerTrace",
+                "startByte": 8,
+                "endByte": 10,
+                "startNibble": 15,
+                "endNibble": 20,
+                "format": "ubin",
+                "description": "Number of samples per trace"
+            },
+            {
+                "name": "extendedReceiverLineNumberInteger",
+                "startByte": 11,
+                "endByte": 13,
+                "startNibble": 21,
+                "endNibble": 26,
+                "format": "sbin",
+                "description": "Extended receiver line number integer"
+            },
+            {
+                "name": "extendedReceiverLineNumberFraction",
+                "startByte": 14,
+                "endByte": 15,
+                "startNibble": 27,
+                "endNibble": 30,
+                "format": "fraction",
+                "description": "Extended receiver line number fraction"
+            },
+            {
+                "name": "extendedReceiverPointNumberInteger",
+                "startByte": 16,
+                "endByte": 18,
+                "startNibble": 31,
+                "endNibble": 36,
+                "format": "sbin",
+                "description": "Extended receiver point number integer"
+            },
+            {
+                "name": "extendedReceiverPointNumberFraction",
+                "startByte": 19,
+                "endByte": 20,
+                "startNibble": 37,
+                "endNibble": 40,
+                "format": "fraction",
+                "description": "Extended receiver point number fraction"
+            },
+            {
+                "name": "sensorType",
+                "startByte": 21,
+                "endByte": 21,
+                "startNibble": 41,
+                "endNibble": 42,
+                "format": "ubin",
+                "description": "Sensor Type"
+            }
+        ]
+    }
+}

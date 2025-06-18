@@ -203,7 +203,7 @@
             }
         ]
     },
-    "0x02": {
+    "_generalHeader2": {
         "name": "generalHeader2",
         "length": 32,
         "fields": [
@@ -1475,6 +1475,270 @@
                 "endNibble": 64,
                 "format": "ubin",
                 "description": "Must be d6 (hex) or 124 (decimal) for this block."
+            }
+        ]
+    },
+    "_demuxTraceHeader": {
+        "name": "demuxTraceHeader",
+        "length": 20,
+        "fields": [
+            {
+                "name": "fileNumber",
+                "startByte": 1,
+                "endByte": 2,
+                "startNibble": 1,
+                "endNibble": 4,
+                "format": "bcd",
+                "description": "File number (must be set to FFFF when the extended file number is used (bytes 18-20)"
+            },
+            {
+                "name": "scanTypeNumber",
+                "startByte": 3,
+                "endByte": 3,
+                "startNibble": 5,
+                "endNibble": 6,
+                "format": "bcd",
+                "description": "Scan type number (must be set to FF when the extended channel set number is used (bytes 16-17)"
+            },
+            {
+                "name": "channelSetNumber",
+                "startByte": 4,
+                "endByte": 4,
+                "startNibble": 7,
+                "endNibble": 8,
+                "format": "bcd",
+                "description": "Channel set number"
+            },
+            {
+                "name": "traceNumber",
+                "startByte": 5,
+                "endByte": 6,
+                "startNibble": 9,
+                "endNibble": 12,
+                "format": "bcd",
+                "description": "Trace number"
+            },
+            {
+                "name": "firstTimingWordInteger",
+                "startByte": 7,
+                "endByte": 8,
+                "startNibble": 13,
+                "endNibble": 16,
+                "format": "ubin",
+                "description": "First timing word integer; Timing word for first sample if multiplexed. Multiply by sample skew time (byte 11) and baseScanInterval (general header 1) for actual time"
+            },
+            {
+                "name": "firstTimingWordFraction",
+                "startByte": 9,
+                "endByte": 9,
+                "startNibble": 17,
+                "endNibble": 18,
+                "format": "fraction",
+                "description": "First timing word fraction"
+            },
+            {
+                "name": "traceHeaderExtension",
+                "startByte": 10,
+                "endByte": 10,
+                "startNibble": 19,
+                "endNibble": 20,
+                "format": "ubin",
+                "description": "Number of 32-byte trace header extension blocks (maximum 15)"
+            },
+            {
+                "name": "sampleSkew",
+                "startByte": 11,
+                "endByte": 11,
+                "startNibble": 21,
+                "endNibble": 22,
+                "format": "fraction",
+                "description": "Sample skew (see First timing word, byte 7)"
+            },
+            {
+                "name": "traceEdit",
+                "startByte": 12,
+                "endByte": 12,
+                "startNibble": 23,
+                "endNibble": 24,
+                "format": "ubin",
+                "description": "Trace edit"
+            },
+            {
+                "name": "timeBreakWindowInteger",
+                "startByte": 13,
+                "endByte": 14,
+                "startNibble": 25,
+                "endNibble": 28,
+                "format": "ubin",
+                "description": "Time break window integer"
+            },
+            {
+                "name": "timeBreakWindowFraction",
+                "startByte": 15,
+                "endByte": 16,
+                "startNibble": 29,
+                "endNibble": 30,
+                "format": "fraction",
+                "description": "Time break window fraction"
+            },
+            {
+                "name": "extendedChannelSetNumber",
+                "startByte": 16,
+                "endByte": 17,
+                "startNibble": 31,
+                "endNibble": 34,
+                "format": "ubin",
+                "description": "Extended channel set number"
+            },
+            {
+                "name": "extendedFileNumber",
+                "startByte": 18,
+                "endByte": 20,
+                "startNibble": 35,
+                "endNibble": 40,
+                "format": "ubin",
+                "description": "Extended file number"
+            }
+        ]
+    },
+    "_traceHeaderExtension": {
+        "name": "traceHeaderExtension",
+        "length": 32,
+        "fields": [
+            {
+                "name": "receiverLineNumber",
+                "startByte": 1,
+                "endByte": 3,
+                "startNibble": 1,
+                "endNibble": 6,
+                "format": "sbin",
+                "description": "Receiver line number"
+            },
+            {
+                "name": "receiverPointNumber",
+                "startByte": 4,
+                "endByte": 6,
+                "startNibble": 7,
+                "endNibble": 12,
+                "format": "sbin",
+                "description": "Receiver point number"
+            },
+            {
+                "name": "receiverPointIndex",
+                "startByte": 7,
+                "endByte": 7,
+                "startNibble": 13,
+                "endNibble": 14,
+                "format": "sbin",
+                "description": "Receiver point index"
+            },
+            {
+                "name": "numberOfSamplesPerTrace",
+                "startByte": 8,
+                "endByte": 10,
+                "startNibble": 15,
+                "endNibble": 20,
+                "format": "ubin",
+                "description": "Number of samples per trace"
+            },
+            {
+                "name": "extendedReceiverLineNumberInteger",
+                "startByte": 11,
+                "endByte": 13,
+                "startNibble": 21,
+                "endNibble": 26,
+                "format": "sbin",
+                "description": "Extended receiver line number integer"
+            },
+            {
+                "name": "extendedReceiverLineNumberFraction",
+                "startByte": 14,
+                "endByte": 15,
+                "startNibble": 27,
+                "endNibble": 30,
+                "format": "fraction",
+                "description": "Extended receiver line number fraction"
+            },
+            {
+                "name": "extendedReceiverPointNumberInteger",
+                "startByte": 16,
+                "endByte": 18,
+                "startNibble": 31,
+                "endNibble": 36,
+                "format": "sbin",
+                "description": "Extended receiver point number integer"
+            },
+            {
+                "name": "extendedReceiverPointNumberFraction",
+                "startByte": 19,
+                "endByte": 20,
+                "startNibble": 37,
+                "endNibble": 40,
+                "format": "fraction",
+                "description": "Extended receiver point number fraction"
+            },
+            {
+                "name": "sensorType",
+                "startByte": 21,
+                "endByte": 21,
+                "startNibble": 41,
+                "endNibble": 42,
+                "format": "ubin",
+                "description": "Sensor Type (6 = vertical accelerometer)"
+            },
+            {
+                "name": "extendedTraceNumber",
+                "startByte": 22,
+                "endByte": 24,
+                "startNibble": 43,
+                "endNibble": 48,
+                "format": "ubin",
+                "description": "Extended trace number if trace number in demux trace header set to FF"
+            },
+            {
+                "name": "numSamplesPerTrace",
+                "startByte": 25,
+                "endByte": 28,
+                "startNibble": 49,
+                "endNibble": 56,
+                "format": "ubin",
+                "description": "Number of samples in this trace"
+            },
+            {
+                "name": "sensorMoving",
+                "startByte": 29,
+                "endByte": 29,
+                "startNibble": 57,
+                "endNibble": 58,
+                "format": "ubin",
+                "description": "1 if sensor is moving during the record or 0 if it is stationary"
+            },
+            {
+                "name": "undefined",
+                "startByte": 30,
+                "endByte": 30,
+                "startNibble": 59,
+                "endNibble": 60,
+                "format": "ubin",
+                "description": "Can take any value"
+            },
+            {
+                "name": "physicalUnit",
+                "startByte": 31,
+                "endByte": 31,
+                "startNibble": 61,
+                "endNibble": 62,
+                "format": "ubin",
+                "description": "Physical unit measured by this sensor (see documentation)"
+            },
+            {
+                "name": "headerBlockType",
+                "startByte": 32,
+                "endByte": 32,
+                "startNibble": 63,
+                "endNibble": 64,
+                "format": "ubin",
+                "description": "Should be 40 for trace header extension #1"
             }
         ]
     }
