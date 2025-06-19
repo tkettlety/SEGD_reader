@@ -52,7 +52,7 @@ See the LICENSE file / file headers for more details.
 
 ### 0.3.4 (19th Jun 2025) - Current Version
 - Extracts more header info from Sercel SEG-D 2.1 files (sensitivity, lat, lon, serial number, ...)
-- Trace stats in obspy more explicitly say whether descale multiplier and sensitivity corrections have been applied
+- Trace stats in obspy explicitly state whether descale multiplier and sensitivity corrections have been applied
 
 ### 0.3.3 (19th Jun 2025)
 - Replaced header spec csv files with a single JSON file for each SEG-D version and updated reader class to use these
