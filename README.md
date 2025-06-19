@@ -24,8 +24,8 @@ SEGD_reader/
 │   ├── __init__.py                      # Initializes package for imports
 │   ├── utils.py                         # Utility functions and classes for added functionality
 │   ├── segd_reader.py                   # Core reader class and functions
-│   ├── segd_csv_headers/                  
-│       └── ...                          # CSV files containing header fields from SEG-D documentation for different versions
+│   ├── json/                  
+│       └── ...                          # JSON files containing header fields from SEG-D documentation for different versions
 ├── examples/                     
 │   ├── sercel_rev3_0_example.ipynb      # Example notebook for reading Sercel WiNG DFU node data (Costa Rica TAPIR deployment)
 │   ├── stryde_rev3_0_example.ipynb      # Example notebook for reading Stryde node data (which deployment?)
