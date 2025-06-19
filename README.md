@@ -39,7 +39,7 @@ SEGD_reader/
 ```
 
 ## Known issues:
-- Doesn't extract sensitivity from rev 2.1 data (can't find in generic headers, must be in manufacturer header?)
+- Sensitivity, lat, lon, etc stored in manufacturer-defined trace extension headers in SEG-D 2.1 files. Only know this structure for Sercel SEG-D files.
 - Need to find polarity correction too (sometimes positive sometimes negative)
 - License needs updating to reflect non-commerical use and to credit initial source of revision 2.1 csv files
 
@@ -50,7 +50,11 @@ See the LICENSE file / file headers for more details.
 
 ## Version history:
 
-### 0.3.3 (19th Jun 2025) - Current Version
+### 0.3.4 (19th Jun 2025) - Current Version
+- Extracts more header info from Sercel SEG-D 2.1 files (sensitivity, lat, lon, serial number, ...)
+- Trace stats in obspy more explicitly say whether descale multiplier and sensitivity corrections have been applied
+
+### 0.3.3 (19th Jun 2025)
 - Replaced header spec csv files with a single JSON file for each SEG-D version and updated reader class to use these
 - Made SEG_D_to_stream a little more stable with respect to handling empty traces and converting traces to int
 

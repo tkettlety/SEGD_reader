@@ -788,6 +788,11 @@ class SEG_D_Reader:
         
         out_dict['file_header']['fileNumber'] = fileNumber
         out_dict['file_header']['SEGDVersion'] = str(gen_head2['majorSEGDrevisionNumber']) + "." + str(gen_head2['minorSEGDrevisionNumber'])
+        try:
+            out_dict['file_header']['manufacturer'] = MANUFACTURERS_CODE[int(gen_head1['manufacturersCode'])]
+        except KeyError:
+            out_dict['file_header']['manufacturer'] = str(gen_head1['manufacturersCode']) + " (not defined in SEG-D documentation)"
+        out_dict['file_header']['manufacturer_serial'] = str(gen_head1['manunfacturersSerialNumber'])
         out_dict['file_header']['year'] = gen_head1['year']
         out_dict['file_header']['jday'] = gen_head1['day']
         out_dict['file_header']['hour'] = gen_head1['hour']
@@ -933,7 +938,7 @@ class SEG_D_Reader:
                             
                     start_byte += 32
             
-                # Not sure what to do with skew blocks yet (the number of these is zero in SmartSolo example file)
+                # Not sure what to do with skew blocks yet (the number of these is zero in SmartSolo/Sercel example files)
                 if num_additional_headers_per_scan_type > 0:
                     for skew_block in range(num_additional_headers_per_scan_type):
                         skew_block_header = self.read_scan_type_header(start_byte) 
@@ -953,30 +958,50 @@ class SEG_D_Reader:
                             start_byte += 20
                             trace_num = tmp['traceNumber']
                             num_trace_extension_headers = tmp['traceHeaderExtension']
-                            for _ in range(int(num_trace_extension_headers)):
-                                trace_header = self.read_trace_header_extension(start_byte)
+                            for trace_extension_header_num in range(int(num_trace_extension_headers)):
+                                # First trace extension header has sensor info, plus line and point numbers
+                                if trace_extension_header_num == 0:
+                                    trace_header = self.read_trace_header_extension(start_byte)
+                                    sensor_type = trace_header['sensorType']
+                                    if (sensor_type > 0) and (sensor_type < 10) and (trace_header['numberOfSamplesPerTrace'] > 0):
+                                        line_num = trace_header['receiverLineNumber']
+                                        if line_num < 0:
+                                            line_num = trace_header['extendedReceiverLineNumberInteger']
+                                            line_num = 'line_' + str(line_num)
+                                        point_num = trace_header['receiverPointNumber']
+                                        if point_num < 0:
+                                            point_num = trace_header['extendedReceiverPointNumberInteger']
+                                            point_num = 'point_' + str(point_num)
+                                        if line_num not in out_dict[dict_key][channel_set]['traceData']:
+                                            out_dict[dict_key][channel_set]['traceData'][line_num] = {}
+                                        if point_num not in out_dict[dict_key][channel_set]['traceData'][line_num]:
+                                            out_dict[dict_key][channel_set]['traceData'][line_num][point_num] = {}
+                                        if trace_num not in out_dict[dict_key][channel_set]['traceData'][line_num][point_num]:
+                                            out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num] = {}
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header'] = {}
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['sensorType_code'] = sensor_type
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['numSamplesPerTrace'] = trace_header['numberOfSamplesPerTrace']
+
+                                # Remaining trace header extensions are user/manufacturer defined. 
+                                
+                                # Sercel headers
+                                if int(gen_head1['manufacturersCode']) == 13:
+                                    
+                                    if trace_extension_header_num == 4:
+                                        trace_ext_head = self.read_32byte_header(start_byte)
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['longitude'] = self.read_ieee_double_float(trace_ext_head, 9, 16)
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['latitude'] = self.read_ieee_double_float(trace_ext_head, 17, 24)
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['elevation'] = self.read_ieee_float(trace_ext_head, 29, 32)
+                                    
+                                    if trace_extension_header_num == 5:
+                                        trace_ext_head = self.read_32byte_header(start_byte)
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['serialNumber'] = self.read_unsigned_binary(trace_ext_head, 2, 4)
+                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['sensorSensitivity'] = self.read_ieee_float(trace_ext_head, 21, 24)
+                                        
+
+                                # TO DO: add other manufacture headers
+
                                 start_byte += 32
-    
-                                # If sensor type defined (> 0 and < 10), get line and point number for data
-                                sensor_type = trace_header['sensorType']
-                                if (sensor_type > 0) and (sensor_type < 10) and (trace_header['numberOfSamplesPerTrace'] > 0):
-                                    line_num = trace_header['receiverLineNumber']
-                                    if line_num < 0:
-                                        line_num = trace_header['extendedReceiverLineNumberInteger']
-                                        line_num = 'line_' + str(line_num)
-                                    point_num = trace_header['receiverPointNumber']
-                                    if point_num < 0:
-                                        point_num = trace_header['extendedReceiverPointNumberInteger']
-                                        point_num = 'point_' + str(point_num)
-                                    if line_num not in out_dict[dict_key][channel_set]['traceData']:
-                                        out_dict[dict_key][channel_set]['traceData'][line_num] = {}
-                                    if point_num not in out_dict[dict_key][channel_set]['traceData'][line_num]:
-                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num] = {}
-                                    if trace_num not in out_dict[dict_key][channel_set]['traceData'][line_num][point_num]:
-                                        out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num] = {}
-                                    out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header'] = {}
-                                    out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['sensorType_code'] = sensor_type
-                                    out_dict[dict_key][channel_set]['traceData'][line_num][point_num][trace_num]['trace_header']['numSamplesPerTrace'] = trace_header['numberOfSamplesPerTrace']
     
                             # Get trace data
                             if out_dict['file_header']['trace_format_code'] == '8058':
@@ -1016,7 +1041,7 @@ class SEG_D_Reader:
         return out_dict
 
 
-def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, remove_stations_with_zero_data = False, get_avg_lat_lon_ele = False, reader_verbose = False, forced_segd_version = None, debug=False):
+def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = True, apply_sensitivity_correction = False, sensitivity_value = None, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, remove_stations_with_zero_data = False, get_avg_lat_lon_ele = False, reader_verbose = False, forced_segd_version = None, debug=False):
     '''
     Reads a Sercel SEG-D file and returns an obspy stream
     Currently supports SEG-D revisions 2.1 and 3.0
@@ -1087,20 +1112,25 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
                             if trace_h['timeZero_utc'] <= UTCDateTime("1980-01-07T00:00:00.000000Z"):
                                 continue
 
-                    if 'serialNumber' not in trace_h:
-                        trace_h['serialNumber'] = str(line_num) + '_' + str(point_num)
+                    # if 'serialNumber' not in trace_h:
+                    #     trace_h['serialNumber'] = str(line_num) + '_' + str(point_num)
                     
                     tr = Trace(trace_d)
 
                     if serial_to_station_name_dict is not None:
-                        if 'network' in serial_to_station_name_dict[trace_h['serialNumber']]:
-                            tr.stats.network = serial_to_station_name_dict[trace_h['serialNumber']]['network_code']
-                        else:
-                            tr.stats.network = network_code
-                        tr.stats.station = serial_to_station_name_dict[trace_h['serialNumber']]['station_code']
+                        if 'serialNumber' in trace_h:
+                            if trace_h['serialNumber'] in serial_to_station_name_dict:
+                                if 'network' in serial_to_station_name_dict[trace_h['serialNumber']]:
+                                    tr.stats.network = serial_to_station_name_dict[trace_h['serialNumber']]['network_code']
+                                else:
+                                    tr.stats.network = network_code
+                                tr.stats.station = serial_to_station_name_dict[trace_h['serialNumber']]['station_code']
                     else:
                         tr.stats.network = network_code
-                        tr.stats.station = str(trace_h['serialNumber'])
+                        if 'serialNumber' in trace_h:
+                            tr.stats.station = str(trace_h['serialNumber'])
+                        else:
+                            tr.stats.station = str(line_num) + '_' + str(point_num)
 
                     if 'samplingInterval' in data[chan_set]['description']:
                         sample_rate = data[chan_set]['description']['samplingInterval'] / 1e6 # Given in microseconds
@@ -1126,18 +1156,48 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
                         tr.stats.channel += SENSOR_CODE[instrument_code]
 
                     tr.stats.starttime = data['file_header']['record_timezero_utc']
+                    tr.stats._units = "raw"
                     tr.stats.segd = {}
-                    tr.stats.segd['serialNumber'] = str(trace_h['serialNumber'])
+                    if 'serialNumber' in trace_h:
+                        tr.stats.segd['serialNumber'] = str(trace_h['serialNumber'])
                     tr.stats.segd.update(data['file_header'])
                     tr.stats.segd.update(data[chan_set]['description'])
 
+                    tr.stats.segd['sensorType_code'] = instrument_code
+                    tr.stats.segd['sensor_type'] = SENSOR_CODE[instrument_code]
+
+                    tr.stats._descale_multiplier = 'NOT CORRECTED'
+                    tr.stats._sensitivity = 'NOT CORRECTED'
+
                     if (use_descale_multiplier) & ('descaleMultiplier' in list(tr.stats.segd.keys())):
-                        tr.data = tr.data * np.float32(float(tr.stats.segd['descaleMultiplier']))
-                    
+                        tr_descale_mult = np.float32(float(tr.stats.segd['descaleMultiplier']))
+                        if tr_descale_mult != 0:
+                            tr.data = tr.data * tr_descale_mult
+                            tr.stats._units = 'V'
+                            tr.stats._descale_multiplier = 'CORRECTED'
+                        del(tr_descale_mult)
+                        
+                    if 'physicalUnit' in tr.stats.segd:
+                        tr.stats.segd['physicalUnit'] = PHYSICAL_UNIT_CODE[int(tr.stats.segd['physicalUnit'])]
+                        
                     if 'sensorSensitivity' in trace_h:
                         tr.stats.segd['sensitivity'] = trace_h['sensorSensitivity']
-                    if 'physicalUnit' in trace_h:
-                        tr.stats.segd['physicalUnit'] = PHYSICAL_UNIT_CODE[trace_h['physicalUnit_code']]
+                    elif sensitivity_value is not None:
+                        tr.stats.segd['sensitivity'] = sensitivity_value
+                    else:
+                        tr.stats._sensitivity = 'NOT CORRECTED (SENSITIVITY UNKNOWN)'
+                    
+                    # Apply sensitivity correction if needed/possible
+                    if ('sensitivity' in tr.stats.segd) & (apply_sensitivity_correction) & (use_descale_multiplier) & ('descaleMultiplier' in list(tr.stats.segd.keys())):
+                        if tr.stats.segd['sensitivity'] != 0:
+                            tr.data = tr.data / tr.stats.segd['sensitivity']
+                            tr.stats._sensitivity = 'CORRECTED'
+                            if 'physicalUnit' in tr.stats.segd:
+                                tr.stats._units = tr.stats.segd['physicalUnit']
+                                tr.stats.segd['physicalUnit'] = tr.stats.segd['physicalUnit'] + " (sensitivity correction applied)"
+                    else:
+                        if 'physicalUnit' in tr.stats.segd:
+                            tr.stats.segd['physicalUnit'] = tr.stats.segd['physicalUnit'] + " (sensitivity correction NOT applied)"
                     if 'latitude' in trace_h:
                         tr.stats.segd['latitude'] = trace_h['latitude']
                         if get_avg_lat_lon_ele:
@@ -1283,6 +1343,54 @@ CHANNEL_GAIN_CONTROL_CODE = {
     4: 'Programmed gain',
     8: 'Binary gain control',
     9: 'IFP gain control'
+}
+
+MANUFACTURERS_CODE = {
+    1: 'Alpine Geophysical Associates, Inc. (Obsolete)',
+    2: 'Applied Magnetics Corporation (See 09)',
+    3: 'Western Geophysical Exploration Products (formerly Litton Resources Systems)',
+    4: 'SIE, Inc. (Obsolete)',
+    5: 'Dyna-Tronics Mfg. Corporation (Obsolete)',
+    6: 'Electronic Instrumentation, Inc. (Obsolete)',
+    7: 'Halliburton Geophysical Services, Inc. (formerly, Electro-Technical Labs, Div. of Geosource, Inc.)',
+    8: 'Fortune Electronics, Inc. (Obsolete)',
+    9: 'Geo Space Corporation',
+    10: 'Leach Corporation (Obsolete)',
+    11: 'Metrix Instrument Co. (Obsolete)',
+    12: 'Redcor Corporation (Obsolete)',
+    13: "Sercel (Societe d'Etudes, Recherches Et Constructions Electroniques)",
+    14: 'Scientific Data Systems (SDS), (Obsolete)',
+    15: 'Texas Instruments, Inc.',
+    17: 'GUS Manufacturing, Inc.',
+    18: 'Input/Output, Inc.',
+    19: 'Geco-Prakla',
+    20: 'Fairfield Industries, Incorporated',
+    22: 'Geco-Prakla',
+    31: 'Japex Geoscience Institute',
+    32: 'Halliburton Geophysical Services, Inc.',
+    33: 'Compuseis, Inc.',
+    34: 'Syntron, Inc.',
+    35: 'Syntron Europe Ltd.',
+    36: 'Opseis',
+    39: 'Grant Geophysical',
+    40: 'Geo-X',
+    41: 'PGS Inc.',
+    42: 'Seamap UK Ltd.',
+    43: 'Hydroscience',
+    44: 'JSC',
+    45: 'Fugro',
+    46: 'ProFocus Systems AS',
+    47: 'Optoplan AS',
+    48: 'Wireless Seismic Inc.',
+    49: 'AutoSeis',
+    50: 'INOVA Geophysical, Inc.',
+    51: 'Verif-i Ltd.',
+    52: 'Troika International',
+    53: 'MagSeis AS',
+    54: 'Seismic Instruments, Inc.',
+    55: 'TGS',
+    56: 'Hewlett Packard Co',
+    57: 'Modern Seismic Technology, LLC'
 }
 
 # Leap seconds data (days since GPS epoch, leap seconds added)

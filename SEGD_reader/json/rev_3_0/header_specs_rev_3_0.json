@@ -1436,7 +1436,7 @@
             }
         ]
     },
-    "0xD6": {
+    "0xd6": {
         "name": "userD6",
         "length": 32,
         "fields": [
