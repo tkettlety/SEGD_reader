@@ -6,7 +6,7 @@ Currently supports the following SEG-D versions:
 - rev 2.1
 
 Tested on data from the following manufacturers:
-- Sercel: rev 3.0
+- Sercel: rev 3.0 and rev 2.1
 - Stryde: rev 3.0
 - SmartSolo: rev 2.1
 
@@ -17,7 +17,7 @@ Includes
 
 MIT License
 
-Copyright (c) 2024 Sacha Lapins
+Copyright (c) 2025 Sacha Lapins
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
