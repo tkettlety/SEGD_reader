@@ -1,5 +1,0 @@
-name,startByte,endByte,startNibble,endNibble,format,description
-latitude,1,8,1,16,double,Sensor latitude
-longitude,9,16,17,32,double,Sensor longitude
-elevation,17,20,33,40,ieee,Sensor elevation
-headerBlockType,32,32,63,64,ubin,Must be d6 (hex) or 124 (decimal) for this block.

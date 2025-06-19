@@ -1,4 +1,0 @@
-name,startByte,endByte,startNibble,endNibble,format,description
-vesselCrewNameShort,1,3,1,6,ascii,Abbreviated vessel or crew name.
-vesselCrewNameLong,4,31,7,62,ascii,Vessel or crew name.
-headerBlockType,32,32,63,64,ubin,Header block type. Set to 10 (hex) / 16 (decimal) for General Header Block 4.

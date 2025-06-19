@@ -50,7 +50,11 @@ See the LICENSE file / file headers for more details.
 
 ## Version history:
 
-### 0.3.2 (24th Jan 2025) - Current Version
+### 0.3.3 (19th Jun 2025) - Current Version
+- Replaced header spec csv files with a single JSON file for each SEG-D version and updated reader class to use these
+- Made SEG_D_to_stream a little more stable with respect to handling empty traces and converting traces to int
+
+### 0.3.2 (24th Jan 2025)
 - Updated SEG_D_to_stream function to apply descale multiplier from trace header
 - Updated checks when trying to rotate from Galperin configuration to ENZ (utils)
 

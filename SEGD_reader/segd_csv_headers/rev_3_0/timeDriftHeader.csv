@@ -1,8 +1,0 @@
-name,startByte,endByte,startNibble,endNibble,format,description
-timeOfDeployment,1,8,1,16,timestamp,Time of sensor unit deployment.
-timeOfRetrieval,9,16,17,32,timestamp,Time of sensor unit retrieval.
-timeOffsetDeployment,17,20,33,40,sbin,Time offset value at deployment in number of microseconds
-timeOffsetRetrieval,21,24,41,48,sbin,Time offset value at retrieval in number of microseconds
-timedriftCorrected,25,25,49,50,ubin,Set to 1 if time drift correction applied or 0 if not.
-correctionMethod,26,26,51,52,ubin,Method for time drift correction. 0 is uncorrected. 1 is linear correction. FF other correction method.
-headerBlockType,32,32,63,64,ubin,Must be set to 43 (hex) or 67 (decimal) for Time Drift Header.

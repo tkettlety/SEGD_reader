@@ -1,3 +1,0 @@
-name,startByte,endByte,startNibble,endNibble,format,description
-clientIdentification,1,31,1,62,ascii,Client name / identification.
-headerBlockType,32,32,63,64,ubin,Header block type. Set to 12 (hex) / 18 (decimal) for General Header Block 6.

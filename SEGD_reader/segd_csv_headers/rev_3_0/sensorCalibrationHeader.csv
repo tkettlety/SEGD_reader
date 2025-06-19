@@ -1,9 +1,0 @@
-name,startByte,endByte,startNibble,endNibble,format,description
-frequency1,1,4,1,8,ieee,Frequency of first calibration value. Set to 0 if not used.
-amplitude1,5,8,9,16,ieee,Amplitude of first calibration value.
-phase1,9,12,17,24,ieee,Phase of first calibration value.
-frequency2,13,16,25,32,ieee,Frequency of second calibration value. Set to 0 if not used.
-amplitude2,17,20,33,40,ieee,Amplitude of second calibration value.
-phase2,21,24,41,48,ieee,Phase of second calibration value.
-calibrationApplied,25,25,49,50,ubin,Set to 1 if calibration has already been applied or 0 if trace is not corrected.
-headerBlockType,32,32,63,64,ubin,Must be 42 (hex) or 65 (decimal) for sensor info header.

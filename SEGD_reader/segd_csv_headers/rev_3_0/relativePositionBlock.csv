@@ -1,6 +1,0 @@
-name,startByte,endByte,startNibble,endNibble,format,description
-offsetEasting,1,4,1,8,ieee,Offset in projected (grid) coordinates in easting direction in units given in projected CRS definition.
-offsetNorthing,5,8,9,16,ieee,Offset in projected (grid) coordinates in northing direction in units given in projected CRS definition.
-offsetVertical,9,12,17,24,ieee,Offset in vertical direction in units given in vertical CRS definition
-description,13,31,25,62,ascii,Manufacturer defined textual description of the equipment
-headerBlockType,32,32,63,64,ubin,Must be 56 (hex) or 86 (decimal) for Relative Position Block.

@@ -1,3 +1,0 @@
-name,startByte,endByte,startNibble,endNibble,format,description
-crsID,1,31,1,62,ascii,Coordinate reference system (CRS) - see appendix D of documentation.
-headerBlockType,32,32,63,64,ubin,Header block type. Set to 55 (hex) / 85 (decimal) for Coordinate Reference System Identification.

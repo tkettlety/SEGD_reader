@@ -1,9 +1,0 @@
-name,startByte,endByte,startNibble,endNibble,format,description
-timeStamp,1,8,1,16,timestamp,Timestamp for measurement.
-measurementValue,9,12,17,24,ieee,Value of the measurement. 
-maximumValue,13,16,25,32,ieee,Max possible value of measurement
-minimumValue,17,20,33,40,ieee,Min possible value of measurement
-quantityClass,21,22,41,44,ubin,Code representing underlying kind of measurement represented by GM1. See documentation.
-unitOfMeasure,23,24,45,48,ubin,Code of Unit of Measurement. See documentation.
-measurementDescription,25,26,49,52,ubin,Measurement description code. See documentation.
-headerBlockType,32,32,63,64,ubin,Must be 61 (hex) or 97 (decimal) for Measurement Block.

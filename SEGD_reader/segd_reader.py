@@ -5,7 +5,7 @@ Currently supports the following SEG-D versions:
 - rev 3.0
 - rev 2.1
 
-Tested on data from the following manufactures:
+Tested on data from the following manufacturers:
 - Sercel: rev 3.0
 - Stryde: rev 3.0
 - SmartSolo: rev 2.1
@@ -41,6 +41,7 @@ SOFTWARE.
 
 import struct
 import csv
+import json
 import datetime
 import numpy as np
 from obspy import UTCDateTime, Trace, Stream
@@ -78,6 +79,10 @@ class SEG_D_Reader:
         """ Close the opened SEG-D file """
         if self.file:
             self.file.close()
+
+    def load_header_specs(self, json_path):
+        with open(json_path, 'r') as f:
+            self.header_specs = json.load(f)
 
     def read_bcd(self, data, start_byte, end_byte, start_nibble, end_nibble):
         """
@@ -356,51 +361,48 @@ class SEG_D_Reader:
         out_string = relevant_bytes.decode('ascii').rstrip(' ')
         
         return out_string
-    
-    def read_header_spec_from_csv(self, spec_filepath):
-        """ Reads header specification from CSV file and returns it as a list of dictionaries """
-        header_spec = []
-        with open(spec_filepath, 'r') as csvfile:
-            csv_reader = csv.DictReader(csvfile)
-            for row in csv_reader:
-                header_spec.append({
-                    'name': row['name'],
-                    'start_byte': int(row['startByte']),
-                    'end_byte': int(row['endByte']),
-                    'start_nibble': int(row['startNibble']),
-                    'end_nibble': int(row['endNibble']),
-                    'format': row['format']
-                })
-        return header_spec
-    
-    def read_header_value_from_csv(self, value_filepath, value):  
-        """ Reads a CSV file containing code-description pairs and returns the description for the provided code. """        
-        with open(value_filepath, mode='r') as csvfile:
-            csv_reader = csv.DictReader(csvfile)
 
-            for row in csv_reader:
-                if row['code'] == value:
-                    return value + ": " + str(row['description'])  # Return the matched description
-                
-        return value + ": Unknown code"  # If the code is not found, return 'Unknown code'
+    def read_header_spec_from_json(self, header_specs, key):
+        """
+        Retrieves the header spec dictionary for a given header key from header JSON file.
+        
+        Parameters:
+            header_specs: dict loaded from header_specs.json
+            key: string like '0x10' or '_generalHeader1'
     
+        Returns:
+            List of field spec dictionaries
+        """
+        try:
+            return header_specs[key]["fields"]
+        except KeyError:
+            raise ValueError(f"Header spec for key '{key}' not found in JSON.")    
+    
+
     def parse_header_fields_from_spec(self, header, header_spec):
-        """ Use dictionaries from read_header_spec_from_csv to parse header fields """
-        # Initialize a dictionary to store parsed header fields
+        """
+        Parses the SEG-D header based on JSON header field specs.
+        
+        Parameters:
+            header: raw bytes of the header
+            header_spec: list of field dictionaries from JSON
+    
+        Returns:
+            dict of header fields
+        """
         header_fields = {}
-
-        # Iterate over the header specification and parse fields
+    
         for spec in header_spec:
             field_name = spec['name']
-            start_byte = spec['start_byte']
-            end_byte = spec['end_byte']
-            start_nibble = spec['start_nibble']
-            end_nibble = spec['end_nibble']
+            start_byte = spec['startByte']
+            end_byte = spec['endByte']
+            start_nibble = spec['startNibble']
+            end_nibble = spec['endNibble']
             data_format = spec['format']
-
-            # Parse based on the format (bcd or ubin)
+    
             if data_format == 'bcd':
                 value = self.read_bcd(header, start_byte, end_byte, start_nibble, end_nibble)
+    
             elif data_format == 'ubin':
                 if start_nibble == end_nibble:
                     if start_nibble == (2 * start_byte) - 1:
@@ -408,40 +410,40 @@ class SEG_D_Reader:
                     else:
                         value = self.read_4bit_unsigned_binary(header, start_byte, 'lower')
                     if field_name == "generalHeaderBlocks":
-                        # if value > 14:
-                            # value = "FF"
                         value = hex(value)[2:]
                 else:
                     value = self.read_unsigned_binary(header, start_byte, end_byte)
                     if field_name == "baseScanInterval":
-                        value = value * 1/16
-                        # if value == 255/16:
-                        #     value = "ff"
-                    # if field_name == "dominantSamplingInterval":
-                        # value = value * 1e-6
-                # if field_name == "headerBlockType":
-                #     value = hex(value)
+                        value = value * (1 / 16)
+    
             elif data_format == 'sbin':
                 value = self.read_signed_binary(header, start_byte, end_byte)
+    
             elif data_format == 'fraction':
                 value = self.read_fractional_unsigned_binary(header, start_byte, end_byte)
+    
             elif data_format == "timestamp":
                 value = self.read_segd_timestamp(header, start_byte, end_byte)
+    
             elif data_format == "ieee":
-                value = self.read_ieee_float(header,start_byte,end_byte)
+                value = self.read_ieee_float(header, start_byte, end_byte)
+    
             elif data_format == "double":
-                value = self.read_ieee_double_float(header,start_byte,end_byte)
-            elif (data_format == "serial") or (data_format == "ascii"):
-                value = self.read_ascii(header,start_byte,end_byte)
+                value = self.read_ieee_double_float(header, start_byte, end_byte)
+    
+            elif data_format in ("serial", "ascii"):
+                value = self.read_ascii(header, start_byte, end_byte)
+    
             elif data_format == "hex":
-                value = hex(self.read_unsigned_binary(header,start_byte,end_byte))
+                value = hex(self.read_unsigned_binary(header, start_byte, end_byte))
+    
             else:
-                raise ValueError(f"Unsupported format {data_format}")
-
-            # Store the parsed value in the header_fields dictionary
+                raise ValueError(f"Unsupported format '{data_format}' in field '{field_name}'")
+    
             header_fields[field_name] = value
-        
+    
         return header_fields
+
 
     def read_storage_unit_label(self):
         """ Reads the first 128 bytes of ASCII storage unit label """
@@ -452,269 +454,129 @@ class SEG_D_Reader:
         self.file.seek(0)
         storage_unit_label = self.file.read(128).decode('ascii', errors='ignore').strip()
         
-        return storage_unit_label        
+        return storage_unit_label    
+
     
-    def read_general_header1(self, after_storage_unit_label=False):
-        """ Reads General Header #1 """
+    def read_and_parse_header(self, start_byte, byte_size, json_key):
+        """Generalized SEG-D header reader using JSON spec."""
         if not self.file:
             return None
-
-        if not self.major_version:
-            self.get_segd_version()
-
-        # Read General Header #1
-        if after_storage_unit_label:
-            general_header_start = 128  # Start after the 128-byte storage unit label
-        else:
-            general_header_start = 0
-        general_header = self.read_32byte_header(general_header_start)
-
-        # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/generalHeader1.csv") as csv_header_path:
-            general_header_spec = self.read_header_spec_from_csv(csv_header_path)
-        header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
-
+    
+        read_method = {
+            20: self.read_20byte_header,
+            32: self.read_32byte_header,
+            96: self.read_96byte_header
+        }.get(byte_size)
+    
+        if not read_method:
+            raise ValueError(f"Unsupported header size: {byte_size} bytes")
+    
+        header = read_method(start_byte)
+    
+        header_spec = self.read_header_spec_from_json(self.header_specs, json_key)
+        header_fields = self.parse_header_fields_from_spec(header, header_spec)
+    
         if self.verbose:
-            # Print parsed fields for verification
+            print(f"Header type: {json_key}")
             for field, value in header_fields.items():
                 print(f"{field}: {value}")
-        
-        return header_fields
     
+        return header_fields
+
+    
+    def read_general_header1(self, include_storage_unit_label=False):
+        """ Reads General Header #1 """
+        offset = 128 if include_storage_unit_label else 0        
+        return self.read_and_parse_header(offset, 32, "_generalHeader1")
+
+
     def read_general_header2(self, include_storage_unit_label=False):
         """ Reads General Header #2 """
-        if not self.file:
-            return None
+        offset = 128 + 32 if include_storage_unit_label else 32
+        return self.read_and_parse_header(offset, 32, "_generalHeader2")
 
-        if not self.major_version:
-            self.get_segd_version()
-
-        # Read General Header #2
-        if include_storage_unit_label:
-            general_header_start = 128 + 32  # Start after the 128-byte storage unit label
-        else:
-            general_header_start = 32
-        general_header = self.read_32byte_header(general_header_start)
-
-        # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/generalHeader2.csv") as csv_header_path:
-            general_header_spec = self.read_header_spec_from_csv(csv_header_path)
-        header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
-
-        if self.verbose:
-            # Print parsed fields for verification
-            for field, value in header_fields.items():
-                print(f"{field}: {value}")
-        
-        return header_fields
 
     def read_general_header3(self, include_storage_unit_label=False):
         """ Reads General Header #3 """
-        if not self.file:
-            return None
-
-        if not self.major_version:
-            self.get_segd_version()
-
-        # General header #3 only applies to SEG-D version 3.0+, 
-        # If version 2.1, read General Header N instead (if exists)
         if int(self.major_version) < 3:
-            gen_head1 = self.read_general_header1() # Check how many general headers in file from general header #1
-            # If less than 2 additional general headers then return None, otherwise proceeed with general header N
-            if int(gen_head1['generalHeaderBlocks']) < 2:
+            gen_head1 = self.read_general_header1()
+            if int(gen_head1.get("generalHeaderBlocks", 0), 16) < 2:
                 return None
-            csv_file = "generalHeaderN.csv"
-        else:
-            csv_file = "generalHeader3.csv"
+            return self.read_and_parse_header(64 + (128 if include_storage_unit_label else 0), 32, "_generalHeaderN")  # Update "0xNN" if you define one
+        return self.read_and_parse_header(64 + (128 if include_storage_unit_label else 0), 32, "0x03")
 
-        # Read General Header #3
-        if include_storage_unit_label:
-            general_header_start = 128 + 64  # Start after the 128-byte storage unit label
-        else:
-            general_header_start = 64
-        general_header = self.read_32byte_header(general_header_start)
 
-        # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/" + csv_file) as csv_header_path:
-            general_header_spec = self.read_header_spec_from_csv(csv_header_path)
-        header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
-
-        if self.verbose:
-            # Print parsed fields for verification
-            for field, value in header_fields.items():
-                print(f"{field}: {value}")
-        
-        return header_fields
 
     def read_general_headerN(self, start_byte):
-        """ Reads General Header N """
-        if not self.file:
-            return None
-
-        if not self.major_version:
-            self.get_segd_version()
-
-        # Only applies to SEG-D version 2.1 (check for earlier versions but deprecated by version 3.0)
-        # if (int(self.major_version) != 2) or (int(self.minor_version) != 1):
+        """ Reads General Header N (only applies to rev 2.1, and possibly below - not checked earlier versions) """
         if int(self.major_version) > 2:
             return None
+        return self.read_and_parse_header(start_byte, 32, "_generalHeaderN")  # Assign a key for GHN in the v2.1 JSON
 
-        # Read General Header #N
-        general_header = self.read_32byte_header(start_byte)
-
-        # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/generalHeaderN.csv") as csv_header_path:
-            general_header_spec = self.read_header_spec_from_csv(csv_header_path)
-        header_fields = self.parse_header_fields_from_spec(general_header, general_header_spec)
-
-        if self.verbose:
-            # Print parsed fields for verification
-            for field, value in header_fields.items():
-                print(f"{field}: {value}")
-        
-        return header_fields
 
     def read_scan_type_header(self, start_byte):
         """ Reads Scan Type Header """
-        if not self.file:
-            return None
+        if int(self.major_version) > 2:
+            return self.read_and_parse_header(start_byte, 96, "0x30")
+        else:
+            return self.read_and_parse_header(start_byte, 32, "0x30")
 
-        scan_header = self.read_96byte_header(start_byte)
-
-        # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/scanTypeHeader.csv") as csv_header_path:
-            scan_header_spec = self.read_header_spec_from_csv(csv_header_path)
-        header_fields = self.parse_header_fields_from_spec(scan_header, scan_header_spec)
-
-        if self.verbose:
-            # Print parsed fields for verification
-            for field, value in header_fields.items():
-                print(f"{field}: {value}")
-        
-        return header_fields
-
+    
     def read_demux_trace_header(self, start_byte):
-        """ Reads Demux trace header """
-        if not self.file:
-            return None
+        """ Reads Demux Trace Header """
+        return self.read_and_parse_header(start_byte, 20, "_demuxTraceHeader")
 
-        demux_header = self.read_20byte_header(start_byte)
-
-        # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/demuxTraceHeader.csv") as csv_header_path:
-            demux_header_spec = self.read_header_spec_from_csv(csv_header_path)
-        header_fields = self.parse_header_fields_from_spec(demux_header, demux_header_spec)
-
-        if self.verbose:
-            # Print parsed fields for verification
-            for field, value in header_fields.items():
-                print(f"{field}: {value}")
         
-        return header_fields
-
     def read_trace_header_extension(self, start_byte):
         """ Reads Trace Header Extension """
-        if not self.file:
-            return None
+        return self.read_and_parse_header(start_byte, 32, "_traceHeaderExtension")
 
-        trace_header = self.read_32byte_header(start_byte)
-
-        # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/traceHeaderExtension.csv") as csv_header_path:
-            trace_header_spec = self.read_header_spec_from_csv(csv_header_path)
-        header_fields = self.parse_header_fields_from_spec(trace_header, trace_header_spec)
-
-        if self.verbose:
-            # Print parsed fields for verification
-            for field, value in header_fields.items():
-                print(f"{field}: {value}")
-        
-        return header_fields
 
     def read_other_header(self, start_byte):
         """ Reads other / optional header extensions given in SEG-D 3.0 documentation """
         if not self.file:
             return None
-
         if not self.major_version:
             self.get_segd_version()
-
-        # Only applies to SEG-D version 3.0+
         if int(self.major_version) < 3:
             return None
-
+    
         trace_header = self.read_32byte_header(start_byte)
-
-        # Read byte32 and check header block type:
         byte32 = self.read_unsigned_binary(trace_header, 32, 32)
+        hex_key = hex(byte32)
+    
+        # Switch to 96-byte read for scan type header and position blocks header
+        if hex_key in {"0x30", "0x50"}:
+            trace_header = self.read_96byte_header(start_byte)
 
-        # Use header code to identify header type and csv file
-        if byte32 == int('0x10',16):
-            trace_header_csv_file = 'generalHeader4.csv'
-        elif byte32 == int('0x11',16):
-            trace_header_csv_file = 'generalHeader5.csv'
-        elif byte32 == int('0x12',16):
-            trace_header_csv_file = 'generalHeader6.csv'
-        elif byte32 == int('0x30',16):
-            trace_header = self.read_96byte_header(start_byte) # hex 30 is code for 96 byte scan type header (channel set description)
-            trace_header_csv_file = 'scanTypeHeader.csv'
-        elif byte32 == int('0x31',16):
-            # This is part of above channel set description, skip
-            return None
-        elif byte32 == int('0x32',16):
-            # This is part of above channel set description, skip
-            return None
-        elif byte32 == int('0x41',16):
-            trace_header_csv_file = 'sensorInfoHeader.csv'
-        elif byte32 == int('0x42',16):
-            trace_header_csv_file = 'timestampHeader.csv'
-        elif byte32 == int('0x43',16):
-            trace_header_csv_file = 'sensorCalibrationHeader.csv'
-        elif byte32 == int('0x44',16):
-            trace_header_csv_file = 'timeDriftHeader.csv'
-        elif byte32 == int('0x50',16):
-            trace_header = self.read_96byte_header(start_byte) # hex 50 is code for 96 byte position blocks header
-            trace_header_csv_file = 'positionBlocks.csv'
-        elif byte32 == int('0x51',16):
-            # This is part of above position blocks header, skip
-            return None
-        elif byte32 == int('0x52',16):
-            # This is part of above position blocks header, skip
-            return None
-        elif byte32 == int('0x55',16):
-            trace_header_csv_file = 'coordRefSystem.csv'
-        elif byte32 == int('0x56',16):
-            trace_header_csv_file = 'relativePositionBlock.csv'
-        elif byte32 == int('0x60',16):
-            trace_header_csv_file = 'orientationHeader.csv'
-        elif byte32 == int('0x61',16):
-            trace_header_csv_file = 'measurementBlock.csv'
-        elif byte32 == int('0xd6',16):
-            trace_header_csv_file = 'userD6.csv'
-        else:
+        # Skip continuations of scan type header and position blocks header
+        if hex_key in {"0x31", "0x32", "0x51", "0x52"}:
             if self.verbose:
-                print("Header type unrecognised, skipping. Header block type: " + hex(byte32)[2:])
+                print(f"Skipping continuation header: {hex_key}")
             return None
-
+    
+        try:
+            header_spec = self.read_header_spec_from_json(self.header_specs, hex_key)
+        except ValueError:
+            if self.verbose:
+                print(f"Header type unrecognised: {hex_key}. Skipping.")
+            return None
+    
+        header_fields = self.parse_header_fields_from_spec(trace_header, header_spec)
+    
         if self.verbose:
-            print("Header type: " + trace_header_csv_file)
-            
-        # Parse fields according to CSV specification
-        with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version) + "/" + trace_header_csv_file) as csv_header_path:
-            trace_header_spec = self.read_header_spec_from_csv(csv_header_path)
-        header_fields = self.parse_header_fields_from_spec(trace_header, trace_header_spec)
-
-        if self.verbose:
-            # Print parsed fields for verification
+            print(f"Header type: {hex_key}")
             for field, value in header_fields.items():
                 print(f"{field}: {value}")
-        
+    
         return header_fields
+
 
 
     def read_32bit_IEEE_trace_data(self, start_byte, num_samples):
         """
         Read trace data from a SEG-D file (format code = 8058).
+        Trace format used by Sercel and SmartSolo.
         
         Parameters:
         - start_byte: The starting byte of the trace data (1-based index).
@@ -740,7 +602,8 @@ class SEG_D_Reader:
 
     def read_24bit_trace_data(self, start_byte, num_samples):
         """
-        Read 24-bit 2's complement trace data from a SEG-D file (format code = 8036).
+        Read 24-bit 2's complement trace data from a SEG-D file (format code = 8036). 
+        Trace format used by Stryde rev 3.0.
         
         Parameters:
         - start_byte: The starting byte of the trace data (1-based index).
@@ -799,6 +662,14 @@ class SEG_D_Reader:
     def clear_segd_version(self):
         self.major_version = None
         self.minor_version = None
+
+    
+    def package_has_versioned_header_data(self):
+        try:
+            contents = pkg_resources.files("SEGD_reader").joinpath("json").iterdir()
+            return any(entry.name == f"rev_{self.major_version}_{self.minor_version}" for entry in contents)
+        except Exception:
+            return False
     
 
     def get_general_headers_only(self, force_version=None):
@@ -819,21 +690,11 @@ class SEG_D_Reader:
         
         if not self.major_version:
             self.get_segd_version()
+
         
-        # Check if the directory exists within 'segd_csv_headers'
-        try:
-            with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version)) as path:
-                if not path.is_dir():
-                    print(f"Version {self.major_version}.{self.minor_version} not yet supported. May get weird values.")
-                    if self.major_version < 3:
-                        # Use rev 2.1 header structure if older version
-                        self.major_version = 2
-                        self.minor_version = 1
-                    else:
-                        # Use rev 3.0 header structure if newer version
-                        self.major_version = 3
-                        self.minor_version = 0
-        except FileNotFoundError:
+        # Check if the directory exists within 'json'        
+        header_spec_available = self.package_has_versioned_header_data()
+        if not header_spec_available:
             print(f"Version {self.major_version}.{self.minor_version} not yet supported. May get weird values.")
             if self.major_version < 3:
                 # Use rev 2.1 header structure if older version
@@ -843,6 +704,10 @@ class SEG_D_Reader:
                 # Use rev 3.0 header structure if newer version
                 self.major_version = 3
                 self.minor_version = 0
+
+        version_str = f"{self.major_version}_{self.minor_version}"
+        json_rel_path = f"json/rev_{version_str}/header_specs_rev_{version_str}.json"
+        self.load_header_specs(pkg_resources.files("SEGD_reader").joinpath(json_rel_path))
 
         out_dict = {}
 
@@ -875,16 +740,23 @@ class SEG_D_Reader:
         if not self.major_version:
             self.get_segd_version()
         
-        # Check if the directory exists within 'segd_csv_headers'
-        try:
-            with pkg_resources.files("SEGD_reader").joinpath("segd_csv_headers/rev_" + str(self.major_version) + "_" + str(self.minor_version)) as path:
-                if not path.is_dir():
-                    print(f"Version {self.major_version}.{self.minor_version} not yet supported. Doing nothing.")
-                    return None
-        except FileNotFoundError:
-            print(f"Version {self.major_version}.{self.minor_version} not yet supported. Doing nothing.")
-            return None
+        # Check if the directory exists within 'json'        
+        header_spec_available = self.package_has_versioned_header_data()
+        if not header_spec_available:
+            print(f"Version {self.major_version}.{self.minor_version} not yet supported. May get weird values.")
+            if self.major_version < 3:
+                # Use rev 2.1 header structure if older version
+                self.major_version = 2
+                self.minor_version = 1
+            else:
+                # Use rev 3.0 header structure if newer version
+                self.major_version = 3
+                self.minor_version = 0
 
+        version_str = f"{self.major_version}_{self.minor_version}"
+        json_rel_path = f"json/rev_{version_str}/header_specs_rev_{version_str}.json"
+        self.load_header_specs(pkg_resources.files("SEGD_reader").joinpath(json_rel_path))
+        
         out_dict = {}
         out_dict['file_header'] = {}
 
@@ -1023,6 +895,7 @@ class SEG_D_Reader:
                     # If seismic data, keep, else skip.
                     if out_dict['channelSet_' + str(channel_set + 1)]['description']['channelType'][2:] == '10':
                         out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_data'] = trace_data
+                            
                     else:
                         continue
 
@@ -1143,7 +1016,7 @@ class SEG_D_Reader:
         return out_dict
 
 
-def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, reader_verbose = False, forced_segd_version = None, debug=False):
+def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = True, serial_to_station_name_dict = None, network_code = 'AA', remove_gaps = False, remove_stations_with_zero_data = False, get_avg_lat_lon_ele = False, reader_verbose = False, forced_segd_version = None, debug=False):
     '''
     Reads a Sercel SEG-D file and returns an obspy stream
     Currently supports SEG-D revisions 2.1 and 3.0
@@ -1154,6 +1027,9 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
     
     if type(filelist) is str:
         filelist = [filelist]
+
+    if get_avg_lat_lon_ele:
+        lat_lon_ele_dict = {}
 
     for filepath in filelist:
         # Initiate SEG_D_Reader:
@@ -1264,15 +1140,42 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
                         tr.stats.segd['physicalUnit'] = PHYSICAL_UNIT_CODE[trace_h['physicalUnit_code']]
                     if 'latitude' in trace_h:
                         tr.stats.segd['latitude'] = trace_h['latitude']
+                        if get_avg_lat_lon_ele:
+                            if tr.stats.station not in list(lat_lon_ele_dict.keys()):
+                                lat_lon_ele_dict[tr.stats.station] = {}
+                            if 'latitude' not in list(lat_lon_ele_dict[tr.stats.station].keys()):
+                                lat_lon_ele_dict[tr.stats.station]['latitude'] = []
+                            lat_lon_ele_dict[tr.stats.station]['latitude'].append(np.float32(trace_h['latitude']))
                     if 'longitude' in trace_h:
                         tr.stats.segd['longitude'] = trace_h['longitude']
+                        if get_avg_lat_lon_ele:
+                            if tr.stats.station not in list(lat_lon_ele_dict.keys()):
+                                lat_lon_ele_dict[tr.stats.station] = {}
+                            if 'longitude' not in list(lat_lon_ele_dict[tr.stats.station].keys()):
+                                lat_lon_ele_dict[tr.stats.station]['longitude'] = []
+                            lat_lon_ele_dict[tr.stats.station]['longitude'].append(np.float32(trace_h['longitude']))
                     if 'elevation' in trace_h:
                         tr.stats.segd['elevation'] = trace_h['elevation']
-
+                        if get_avg_lat_lon_ele:
+                            if tr.stats.station not in list(lat_lon_ele_dict.keys()):
+                                lat_lon_ele_dict[tr.stats.station] = {}
+                            if 'elevation' not in list(lat_lon_ele_dict[tr.stats.station].keys()):
+                                lat_lon_ele_dict[tr.stats.station]['elevation'] = []
+                            lat_lon_ele_dict[tr.stats.station]['elevation'].append(np.float32(trace_h['elevation']))
+                    # st.append(tr)
                     st += tr
                     
         reader.close_file()
 
+    # Remove any stations with all zero data:
+    if remove_stations_with_zero_data:
+        stations = list({tr.stats.station for tr in st})
+        for sta in stations:
+            st_check = st.select(station=sta)
+            if np.all([np.all((tr.data == 0) | (np.isnan(tr.data))) for tr in st_check]):
+                for tr in st_check:
+                    st.remove(tr)
+                    
     # Check if all traces can be converted to int
     convert_to_int = convert_to_int and np.all([(np.mod(tr.data, 1) == 0) for tr in st])
     
@@ -1286,6 +1189,42 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
         # Handle the exception or ignore it
         print(f"Ignoring error: {e}")
 
+    # Assign average lat, lon, ele:
+    if get_avg_lat_lon_ele:
+        for tr in st:
+            sta = tr.stats.station
+            if 'loc' not in list(tr.stats.keys()):
+                tr.stats.loc = {}
+            tr.stats.loc['latitude'] = np.mean(lat_lon_ele_dict[tr.stats.station]['latitude'])
+            tr.stats.loc['longitude'] = np.mean(lat_lon_ele_dict[tr.stats.station]['longitude'])
+            tr.stats.loc['elevation'] = np.mean(lat_lon_ele_dict[tr.stats.station]['elevation'])
+
+    # Make sure 3C nodes have all three components (fill with zeros if not? Or masked array?)
+    if remove_gaps:
+        if serial_to_station_name_dict is not None:
+            stations = list({tr.stats.station for tr in st})
+            for sta in stations:
+                st_check = st.copy().select(station=sta)
+                station_components = defaultdict(list)
+                for node_serial, details in serial_to_station_name_dict.items():
+                    station_code = details['station_code']
+                    component = details['component']
+                    station_components[station_code].append({'component': component, 'node_serial': node_serial})
+                for station_node in list(station_components[sta]):
+                    if np.all([(tr.stats.component != station_node['component']) for tr in st_check]):
+                        new_trace = st_check.copy()[0] # Copy first component from station
+                        new_trace.data = np.zeros(new_trace.data.shape) # Replace data with all zeroes
+                        new_trace.stats.channel = new_trace.stats.channel[:2] + station_node['component'] # Update component name
+                        new_trace.stats.segd.serialNumber = station_node['node_serial'] # Update node serial number
+                        # Add new_trace on to st_check and st
+                        st_check += new_trace.copy()
+                        st += new_trace.copy()
+
+            st.sort()
+
+    if get_avg_lat_lon_ele:
+        return st, lat_lon_ele_dict
+        
     return st
 
 
