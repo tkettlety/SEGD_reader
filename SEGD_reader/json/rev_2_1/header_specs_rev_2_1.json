@@ -441,7 +441,7 @@
                 "endByte": 7,
                 "startNibble": 13,
                 "endNibble": 14,
-                "format": "ubin",
+                "format": "smagbinfrac",
                 "description": "Optional byte which extends descale muliplier resolution"
             },
             {
@@ -450,7 +450,7 @@
                 "endByte": 8,
                 "startNibble": 15,
                 "endNibble": 16,
-                "format": "sbin",
+                "format": "smagbin",
                 "description": "Descale multiplier (2^-31.75-2^31.75)"
             },
             {

@@ -40,17 +40,19 @@ SEGD_reader/
 
 ## Known issues:
 - Sensitivity, lat, lon, etc stored in manufacturer-defined trace extension headers in SEG-D 2.1 files. Only know this structure for Sercel SEG-D files.
-- Need to find polarity correction too (sometimes positive sometimes negative)
 - License needs updating to reflect non-commerical use and to credit initial source of revision 2.1 csv files
 
 ## License
 
-This package is open-source and licensed under the MIT License.
+This package is open-source and currently licensed under the MIT License.
 See the LICENSE file / file headers for more details.
 
 ## Version history:
 
-### 0.3.4 (19th Jun 2025) - Current Version
+### 0.3.5 (23rd Jun 2025) - Current Version
+- Fixed polarity flipping (descale multiplier) error for some SEG-D 2.1 files
+
+### 0.3.4 (19th Jun 2025)
 - Extracts more header info from Sercel SEG-D 2.1 files (sensitivity, lat, lon, serial number, ...)
 - Trace stats in obspy explicitly state whether descale multiplier and sensitivity corrections have been applied
 

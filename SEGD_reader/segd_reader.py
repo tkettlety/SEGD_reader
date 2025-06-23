@@ -17,7 +17,7 @@ Includes
 
 MIT License
 
-Copyright (c) 2025 Sacha Lapins
+Copyright (c) 2024 Sacha Lapins
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -185,6 +185,50 @@ class SEG_D_Reader:
             signed_value = int.from_bytes(relevant_bytes, byteorder='big', signed=True)
 
         return signed_value
+
+    def read_sign_magnitude_binary(self, data, start_byte, end_byte):
+        """
+        Read a sign-magnitude binary number from the specified byte range (1-based indexing).
+        Returns an integer value.
+        """
+    
+        # Extract relevant bytes (adjusting for 1-based indexing)
+        relevant_bytes = bytearray(data[start_byte - 1:end_byte])
+        if not relevant_bytes:
+            raise ValueError("No bytes selected")
+    
+        # Extract sign bit from the first byte
+        sign_bit = (relevant_bytes[0] & 0x80) >> 7
+    
+        # Clear sign bit in the first byte to get magnitude
+        relevant_bytes[0] &= 0x7F
+    
+        magnitude = int.from_bytes(relevant_bytes, byteorder='big', signed=False)
+        sign = -1 if sign_bit else 1
+    
+        return sign * magnitude
+
+    def read_sign_magnitude_binary_fractional_offset(self, data, fractional_byte_index, starting_fractional_power = -3):
+        """
+        Reads fine-grained fractional bits for a sign-magnitude binary number from an optional preceding byte.
+        Returns the fractional offset to be added to the sign-magnitude binary number.
+        
+        Parameters:
+        - fractional_byte_index: Byte with fractional bits (1-based indexing); set to None if unused
+        - stating_factional_power: starting fractional power of 2 for first bit of byte (e.g., if starting with -3 it starts from 2^-3 (i.e., 0.125) and goes through to 2^-10 (approx. 0.0009765625) for each bit)
+        """
+        
+        fractional_offset = 0.0
+    
+        if fractional_byte_index is not None:
+            byte_val = data[fractional_byte_index - 1]
+            # Bits map to 2^-3 to 2^-10
+            bit_weights = [2 ** (starting_fractional_power - i) for i in range(8)]
+            for i in range(8):
+                if byte_val & (1 << (7 - i)):  # MSB to LSB
+                    fractional_offset += bit_weights[i]
+    
+        return fractional_offset
 
     def read_ieee_float(self, data, start_byte, end_byte):
         """
@@ -421,6 +465,12 @@ class SEG_D_Reader:
     
             elif data_format == 'fraction':
                 value = self.read_fractional_unsigned_binary(header, start_byte, end_byte)
+
+            elif data_format == 'smagbin':
+                value = self.read_sign_magnitude_binary(header, start_byte, end_byte)
+
+            elif data_format == 'smagbinfrac':
+                value = self.read_sign_magnitude_binary_fractional_offset(header, start_byte)
     
             elif data_format == "timestamp":
                 value = self.read_segd_timestamp(header, start_byte, end_byte)
@@ -1170,10 +1220,20 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
                     tr.stats._sensitivity = 'NOT CORRECTED'
 
                     if (use_descale_multiplier) & ('descaleMultiplier' in list(tr.stats.segd.keys())):
-                        tr_descale_mult = np.float32(float(tr.stats.segd['descaleMultiplier']))
+                        # Handle SEG-D v2.1 descale multiplier differently (stored as base-2 exponent)
+                        if float(tr.stats.segd['SEGDVersion']) < 3:
+                            tr_descale_mult = tr.stats.segd['descaleMultiplier'] * 0.25
+                            if tr_descale_mult >= 0:
+                                tr_descale_mult = tr_descale_mult + tr.stats.segd['descaleMultiplierExtendedResolution']
+                            else:
+                                tr_descale_mult = tr_descale_mult - tr.stats.segd['descaleMultiplierExtendedResolution']
+                            tr_descale_mult = 2 ** tr_descale_mult
+                        else:
+                            # SEG-D v3.0 (stored as IEEE float)
+                            tr_descale_mult = np.float32(float(tr.stats.segd['descaleMultiplier']))
                         if tr_descale_mult != 0:
                             tr.data = tr.data * tr_descale_mult
-                            tr.stats._units = 'V'
+                            tr.stats._units = 'mV'
                             tr.stats._descale_multiplier = 'CORRECTED'
                         del(tr_descale_mult)
                         
