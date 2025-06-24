@@ -1228,6 +1228,8 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
                             else:
                                 tr_descale_mult = tr_descale_mult - tr.stats.segd['descaleMultiplierExtendedResolution']
                             tr_descale_mult = 2 ** tr_descale_mult
+                            tr.stats.segd['descaleMultiplierExponent'] = tr.stats.segd['descaleMultiplier'] * 0.25
+                            tr.stats.segd['descaleMultiplier'] = tr_descale_mult
                         else:
                             # SEG-D v3.0 (stored as IEEE float)
                             tr_descale_mult = np.float32(float(tr.stats.segd['descaleMultiplier']))
