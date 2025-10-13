@@ -49,7 +49,10 @@ See the LICENSE file / file headers for more details.
 
 ## Version history:
 
-### 0.3.5 (23rd Jun 2025) - Current Version
+### 0.3.6 (13th Oct 2025) - Current Version
+- Fixed error when using remove_gaps=True and remove_stations_with_zero_data=True
+
+### 0.3.5 (23rd Jun 2025)
 - Fixed polarity flipping (descale multiplier) error for some SEG-D 2.1 files
 
 ### 0.3.4 (19th Jun 2025)
