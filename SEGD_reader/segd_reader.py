@@ -47,6 +47,7 @@ import numpy as np
 from obspy import UTCDateTime, Trace, Stream
 from pathlib import Path
 import importlib.resources as pkg_resources
+from collections import defaultdict
 
 
 ''' 1. Main SEG-D reader class '''
