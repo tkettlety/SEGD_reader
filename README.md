@@ -40,12 +40,15 @@ SEGD_reader/
 
 ## Known issues:
 - Sensitivity, lat, lon, etc stored in manufacturer-defined trace extension headers in SEG-D 2.1 files. Only know this structure for Sercel SEG-D files.
-- License needs updating to reflect non-commerical use and to credit initial source of revision 2.1 csv files
 
 ## License
 
 This package is open-source and currently licensed under the MIT License.
 See the LICENSE file / file headers for more details.
+
+## Disclaimer
+
+This software is provided for research use and is not guaranteed to be free of errors. Users should validate results independently.
 
 ## Version history:
 
