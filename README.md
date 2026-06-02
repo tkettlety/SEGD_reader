@@ -4,6 +4,8 @@ A Python package to read seismic data from SEG-D format.
 
 Currently supports SEG-D revisions 2.1 and 3.0.
 
+DOI: https://doi.org/10.5281/zenodo.19371699
+
 ## Installation:
 
 To install in dev/editable mode (recommended at this stage), `cd` to the repository on your local storage and run:
