@@ -1,3 +1,34 @@
+Metadata-Version: 2.4
+Name: SEGD_reader
+Version: 0.3.6
+Summary: A Python package to read seismic data from SEG-D format
+Home-page: https://github.com/SEGDreader/segd_reader
+License: MIT
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Scientific/Engineering :: Physics
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: obspy
+Provides-Extra: jupyter
+Requires-Dist: jupyterlab; extra == "jupyter"
+Requires-Dist: ipython; extra == "jupyter"
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license
+Dynamic: license-file
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
 # SEGD_reader
 
 A Python package to read seismic data from SEG-D format.
@@ -16,11 +47,6 @@ pip install -e .
 After, to install optional jupyter lab dependencies (e.g., if using new environment), run:
 ```
 pip install SEGD_reader[jupyter]
-```
-
-To install test dependencies, run:
-```
-pip install SEGD_reader[tests]
 ```
 
 ## Package contents:
@@ -42,51 +68,7 @@ SEGD_reader/
 ├── pyproject.toml                       # Build configuration file
 ├── setup.py                             # Packaging configuration
 ├── README.md                            # Project description
-├── AGENTS.md                            # Standing guidance for future coding agents
-├── tests/                               # Automated regression tests
 └── LICENSE                              # License file
-```
-
-## Time drift metadata
-
-For SEG-D rev 3.0 files, `SEGD_reader` exposes raw Time Drift Header metadata but it is **not applied as a timing correction**.
-
-This Time Drift Header exposure has been tested on bundled Stryde rev 3.0 example data and on local Stryde node files used during development.
-
-The raw Time Drift Header fields are preserved for downstream inspection and comparison:
-
-- low-level parsed output: `trace_header['timeDriftBlock']`
-- ObsPy stream output: `tr.stats.segd['timeDriftBlock']`
-
-This metadata is exposed exactly as read from the file, including:
-
-- `timeOfDeployment`
-- `timeOfRetrieval`
-- `timeOffsetDeployment`
-- `timeOffsetRetrieval`
-- `timedriftCorrected`
-- `correctionMethod`
-- `headerBlockType`
-
-`record_timezero_utc` and `Trace.stats.starttime` continue to come from the SEG-D timestamp headers, not from deployment/retrieval offset metadata.
-
-Example:
-
-```python
-from SEGD_reader import SEG_D_to_stream
-
-st = SEG_D_to_stream("./examples/data/1.101_19_00_00_SN_2402041994_0.rsamp.segd")
-print(st[0].stats.segd["timeDriftBlock"])
-```
-
-The SEG-D rev 3.0 documents bundled under `segd_docs/` are the reference source for block semantics.
-
-## Running tests
-
-Run the automated tests from the repository root with:
-
-```bash
-python -m pytest -q -p no:cacheprovider tests
 ```
 
 ## Known issues:
@@ -102,12 +84,6 @@ See the LICENSE file / file headers for more details.
 This software is provided for research use and is not guaranteed to be free of errors. Users should validate results independently.
 
 ## Version history:
-
-### Unreleased
-- Expose raw rev 3.0 Time Drift Header metadata in parsed headers and `tr.stats.segd` without applying timing correction
-- Test the Time Drift Header exposure path on Stryde rev 3.0 data
-- Add a minimal pytest-based regression suite
-- Add `AGENTS.md` guidance for future parser and metadata work
 
 ### 0.3.6 (13th Oct 2025) - Current Version
 - Fixed error when using remove_gaps=True and remove_stations_with_zero_data=True

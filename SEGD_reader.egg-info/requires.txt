@@ -1,0 +1,6 @@
+numpy
+obspy
+
+[jupyter]
+jupyterlab
+ipython

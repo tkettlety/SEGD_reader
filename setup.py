@@ -18,7 +18,8 @@ setup(
         "obspy"
     ],
     extras_require={
-        "jupyter": ["jupyterlab", "ipython"]
+        "jupyter": ["jupyterlab", "ipython"],
+        "tests": ["pytest"],
     },
     classifiers=[
         "Development Status :: 4 - Beta",

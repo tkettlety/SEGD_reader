@@ -929,7 +929,7 @@ class SEG_D_Reader:
                                 elif tmp['headerBlockType'] == 65:
                                     out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['sensorSensitivity'] = tmp['sensorSensitivity']
                                     out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['serialNumber'] = tmp['serialNumber']
-                                elif tmp['headerBlockType'] == 64:
+                                elif tmp['headerBlockType'] == 68:
                                     out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['timeDriftBlock'] = tmp
                                 elif tmp['headerBlockType'] == 214:
                                     out_dict['channelSet_' + str(channel_set + 1)]['traceData'][line_num][point_num]['trace_header']['latitude'] = tmp['latitude']
@@ -1285,6 +1285,9 @@ def SEG_D_to_stream(filelist, convert_to_int = True, use_descale_multiplier = Tr
                             if 'elevation' not in list(lat_lon_ele_dict[tr.stats.station].keys()):
                                 lat_lon_ele_dict[tr.stats.station]['elevation'] = []
                             lat_lon_ele_dict[tr.stats.station]['elevation'].append(np.float32(trace_h['elevation']))
+                    if 'timeDriftBlock' in trace_h:
+                        # Expose raw SEG-D time-drift provenance without altering timing.
+                        tr.stats.segd['timeDriftBlock'] = trace_h['timeDriftBlock'].copy()
                     # st.append(tr)
                     st += tr
                     

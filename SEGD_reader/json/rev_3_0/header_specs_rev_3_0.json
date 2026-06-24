@@ -910,7 +910,7 @@
                 "startNibble": 63,
                 "endNibble": 64,
                 "format": "ubin",
-                "description": "Must be 42 (hex) or 65 (decimal) for sensor info header."
+                "description": "Must be set to 43 (hex) or 67 (decimal) for Sensor Calibration Header."
             }
         ]
     },
@@ -979,7 +979,7 @@
                 "startNibble": 63,
                 "endNibble": 64,
                 "format": "ubin",
-                "description": "Must be set to 43 (hex) or 67 (decimal) for Time Drift Header."
+                "description": "Must be set to 44 (hex) or 68 (decimal) for Time Drift Header."
             }
         ]
     },
